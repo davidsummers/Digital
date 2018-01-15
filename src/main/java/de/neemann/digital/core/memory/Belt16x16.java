@@ -20,25 +20,27 @@ public class Belt16x16 extends Node implements Element, RAMInterface
    * The RAMs {@link ElementTypeDescription}
    */
   public static final ElementTypeDescription DESCRIPTION = new ElementTypeDescription( Belt16x16.class,
-    input( "C"     ),
-    input( "STR0"  ),
-    input( "WD0"   ),
-    input( "STR1"  ),
-    input( "WD1"   ),
-    input( "STR2"  ),
-    input( "WD2"   ),
-    input( "STR3"  ),
-    input( "WD3"   ),
-    input( "STR4"  ),
-    input( "WD4"   ),
-    input( "STR5"  ),
-    input( "WD5"   ),
-    input( "STR6"  ),
-    input( "WD6"   ),
-    input( "STR7"  ),
-    input( "WD7"   ),
-    input( "RA0"   ),
-    input( "RA1"   ))
+    input( "C"      ),
+    input( "STR0"   ),
+    input( "WD0"    ),
+    input( "STR1"   ),
+    input( "WD1"    ),
+    input( "STR2"   ),
+    input( "WD2"    ),
+    input( "STR3"   ),
+    input( "WD3"    ),
+    input( "STR4"   ),
+    input( "WD4"    ),
+    input( "STR5"   ),
+    input( "WD5"    ),
+    input( "STR6"   ),
+    input( "WD6"    ),
+    input( "STR7"   ),
+    input( "WD7"    ),
+    input( "RA0"    ),
+    input( "RA1"    ),
+    input( "NFRAME" ),
+    input( "PFRAME" ))
     .addAttribute( Keys.ROTATE    )
     .addAttribute( Keys.BITS      )
     .addAttribute( Keys.ADDR_BITS )
@@ -62,6 +64,8 @@ public class Belt16x16 extends Node implements Element, RAMInterface
   private boolean               m_str5;
   private boolean               m_str6;
   private boolean               m_str7;
+  private boolean               m_nframe;
+  private boolean               m_pframe;
   private long                  m_wd0;
   private long                  m_wd1;
   private long                  m_wd2;
@@ -94,9 +98,12 @@ public class Belt16x16 extends Node implements Element, RAMInterface
   private ObservableValue       m_wd7In;
   private ObservableValue       m_ra0In;
   private ObservableValue       m_ra1In;
+  private ObservableValue       m_nframeIn;
+  private ObservableValue       m_pframeIn;
 
   private final ObservableValue m_out0;
   private final ObservableValue m_out1;
+  private final ObservableValue m_cframe;
 
 
   /**
@@ -107,12 +114,13 @@ public class Belt16x16 extends Node implements Element, RAMInterface
   public Belt16x16( ElementAttributes attr_ )
   {
     super( true ); // true = hasState
-    m_bits = attr_.get( Keys.BITS );
-    m_out0 = new ObservableValue( "RD0", m_bits ).setPinDescription( DESCRIPTION );
-    m_out1 = new ObservableValue( "RD1", m_bits ).setPinDescription( DESCRIPTION );
+    m_bits     = attr_.get( Keys.BITS      );
     m_addrBits = attr_.get( Keys.ADDR_BITS );
+    m_out0   = new ObservableValue( "RD0",    m_bits     ).setPinDescription( DESCRIPTION );
+    m_out1   = new ObservableValue( "RD1",    m_bits     ).setPinDescription( DESCRIPTION );
+    m_cframe = new ObservableValue( "CFRAME", m_addrBits ).setPinDescription( DESCRIPTION );
     m_size = 1 << m_addrBits;
-    m_belt = new DataField( m_size * m_size );
+    m_belt     = new DataField( m_size * m_size );
     m_Counters = new DataField( m_size );
     m_Pointers = new DataField( m_size );
     m_label = attr_.getCleanLabel( );
@@ -121,31 +129,33 @@ public class Belt16x16 extends Node implements Element, RAMInterface
   @Override
   public void setInputs( ObservableValues inputs_ ) throws NodeException
   {
-    m_clk1In  = inputs_.get(  0 ).checkBits( 1,          this ).addObserverToValue( this );
-    m_str0In  = inputs_.get(  1 ).checkBits( 1,          this );
-    m_wd0In   = inputs_.get(  2 ).checkBits( m_bits,     this );
-    m_str1In  = inputs_.get(  3 ).checkBits( 1,          this );
-    m_wd1In   = inputs_.get(  4 ).checkBits( m_bits,     this );
-    m_str2In  = inputs_.get(  5 ).checkBits( 1,          this );
-    m_wd2In   = inputs_.get(  6 ).checkBits( m_bits,     this );
-    m_str3In  = inputs_.get(  7 ).checkBits( 1,          this );
-    m_wd3In   = inputs_.get(  8 ).checkBits( m_bits,     this );
-    m_str4In  = inputs_.get(  9 ).checkBits( 1,          this );
-    m_wd4In   = inputs_.get( 10 ).checkBits( m_bits,     this );
-    m_str5In  = inputs_.get( 11 ).checkBits( 1,          this );
-    m_wd5In   = inputs_.get( 12 ).checkBits( m_bits,     this );
-    m_str6In  = inputs_.get( 13 ).checkBits( 1,          this );
-    m_wd6In   = inputs_.get( 14 ).checkBits( m_bits,     this );
-    m_str7In  = inputs_.get( 15 ).checkBits( 1,          this );
-    m_wd7In   = inputs_.get( 16 ).checkBits( m_bits,     this );
-    m_ra0In   = inputs_.get( 17 ).checkBits( m_addrBits, this ).addObserverToValue( this );
-    m_ra1In   = inputs_.get( 18 ).checkBits( m_addrBits, this ).addObserverToValue( this );
+    m_clk1In   = inputs_.get(  0 ).checkBits( 1,          this ).addObserverToValue( this );
+    m_str0In   = inputs_.get(  1 ).checkBits( 1,          this ).addObserverToValue( this );
+    m_wd0In    = inputs_.get(  2 ).checkBits( m_bits,     this ).addObserverToValue( this );
+    m_str1In   = inputs_.get(  3 ).checkBits( 1,          this ).addObserverToValue( this );
+    m_wd1In    = inputs_.get(  4 ).checkBits( m_bits,     this ).addObserverToValue( this );
+    m_str2In   = inputs_.get(  5 ).checkBits( 1,          this ).addObserverToValue( this );
+    m_wd2In    = inputs_.get(  6 ).checkBits( m_bits,     this ).addObserverToValue( this );
+    m_str3In   = inputs_.get(  7 ).checkBits( 1,          this ).addObserverToValue( this );
+    m_wd3In    = inputs_.get(  8 ).checkBits( m_bits,     this ).addObserverToValue( this );
+    m_str4In   = inputs_.get(  9 ).checkBits( 1,          this ).addObserverToValue( this );
+    m_wd4In    = inputs_.get( 10 ).checkBits( m_bits,     this ).addObserverToValue( this );
+    m_str5In   = inputs_.get( 11 ).checkBits( 1,          this ).addObserverToValue( this );
+    m_wd5In    = inputs_.get( 12 ).checkBits( m_bits,     this ).addObserverToValue( this );
+    m_str6In   = inputs_.get( 13 ).checkBits( 1,          this ).addObserverToValue( this );
+    m_wd6In    = inputs_.get( 14 ).checkBits( m_bits,     this ).addObserverToValue( this );
+    m_str7In   = inputs_.get( 15 ).checkBits( 1,          this ).addObserverToValue( this );
+    m_wd7In    = inputs_.get( 16 ).checkBits( m_bits,     this ).addObserverToValue( this );
+    m_ra0In    = inputs_.get( 17 ).checkBits( m_addrBits, this ).addObserverToValue( this );
+    m_ra1In    = inputs_.get( 18 ).checkBits( m_addrBits, this ).addObserverToValue( this );
+    m_nframeIn = inputs_.get( 19 ).checkBits( 1,          this ).addObserverToValue( this );
+    m_pframeIn = inputs_.get( 20 ).checkBits( 1,          this ).addObserverToValue( this );
   }
 
   @Override
   public ObservableValues getOutputs( )
   {
-    return new ObservableValues( m_out0, m_out1 );
+    return new ObservableValues( m_out0, m_out1, m_cframe );
   }
 
   @Override
@@ -213,6 +223,9 @@ public class Belt16x16 extends Node implements Element, RAMInterface
         m_wd7 = m_wd7In.getValue();
         storeCount++;
       }
+      
+      m_nframe = m_nframeIn.getBool( );
+      m_pframe = m_pframeIn.getBool( );
     }
     else
     {
@@ -247,58 +260,73 @@ public class Belt16x16 extends Node implements Element, RAMInterface
   @Override
   public void writeOutputs( ) throws NodeException
   {
-      int currentCount = 0;
-      
-      if ( m_str0 )
-      {
-        SetBelt( currentCount, m_wd0 );
-        currentCount++;
-      }
+    int currentCount = 0;
 
-      if ( m_str1 )
-      {
-        SetBelt( currentCount, m_wd1 );
-        currentCount++;
-      }
+    if ( m_str0 )
+    {
+      SetBelt( currentCount, m_wd0 );
+      currentCount++;
+    }
 
-      if ( m_str2 )
-      {
-        SetBelt( currentCount, m_wd2 );
-        currentCount++;
-      }
-      
-      if ( m_str3 )
-      {
-        SetBelt( currentCount, m_wd3 );
-        currentCount++;
-      }
-      
-      if ( m_str4 )
-      {
-        SetBelt( currentCount, m_wd4 );
-        currentCount++;
-      }
-      
-      if ( m_str5 )
-      {
-        SetBelt( currentCount, m_wd5 );
-        currentCount++;
-      }
-      
-      if ( m_str6 )
-      {
-        SetBelt( currentCount, m_wd6 );
-        currentCount++;
-      }
-      
-      if ( m_str7 )
-      {
-        SetBelt( currentCount, m_wd7 );
-        currentCount++;
-      }
-      
+    if ( m_str1 )
+    {
+      SetBelt( currentCount, m_wd1 );
+      currentCount++;
+    }
+
+    if ( m_str2 )
+    {
+      SetBelt( currentCount, m_wd2 );
+      currentCount++;
+    }
+
+    if ( m_str3 )
+    {
+      SetBelt( currentCount, m_wd3 );
+      currentCount++;
+    }
+
+    if ( m_str4 )
+    {
+      SetBelt( currentCount, m_wd4 );
+      currentCount++;
+    }
+
+    if ( m_str5 )
+    {
+      SetBelt( currentCount, m_wd5 );
+      currentCount++;
+    }
+
+    if ( m_str6 )
+    {
+      SetBelt( currentCount, m_wd6 );
+      currentCount++;
+    }
+
+    if ( m_str7 )
+    {
+      SetBelt( currentCount, m_wd7 );
+      currentCount++;
+    }
+
+    if ( m_nframe )
+    {
+      boolean minusOne = true;
+      m_CurrentFrame = MaxSize( m_CurrentFrame + 1, minusOne );
+      m_nframe = false;
+    }
+    
+    if ( m_pframe )
+    {
+      boolean minusOne = true;
+      m_CurrentFrame = MaxSize( m_CurrentFrame - 1, minusOne );
+      m_pframe = false;
+    }
+    
     m_out0.setValue( GetBelt( m_raddr0 ) );    
     m_out1.setValue( GetBelt( m_raddr1 ) );
+    m_cframe.setValue( m_CurrentFrame );
   }
 
   @Override
@@ -329,9 +357,14 @@ public class Belt16x16 extends Node implements Element, RAMInterface
   public int getAddrBits()
   {
     return m_addrBits;
-  }
+  }  
   
   private int MaxSize( int value_ )
+  {
+    return MaxSize( value_, false );
+  }
+  
+  private int MaxSize( int value_, boolean minusOne_ )
   {
     int ret = value_;
     
@@ -340,9 +373,19 @@ public class Belt16x16 extends Node implements Element, RAMInterface
       ret = 0;
     }
     
-    if ( value_ > m_size )
+    if ( minusOne_ )
     {
-      ret = m_size;
+      if ( value_ >= m_size )
+      {
+        ret = m_size - 1;
+      }
+    }
+    else
+    {
+      if ( value_ > m_size )
+      {
+        ret = m_size;
+      }
     }
     
     return ret;
