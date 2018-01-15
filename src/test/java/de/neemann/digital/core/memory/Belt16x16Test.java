@@ -81,9 +81,11 @@ public class Belt16x16Test extends TestCase
         wd7,
         str7,
         wd7,
-        ra0 )
+        ra0,
+        ra1 )
         .setOutputs( out.getOutputs( ) );
-    //        C  ST0, WD0, ST1, WD1, ST2, WD2, ST3, WD3, ST4, WD4, ST5, WD5, ST6, WD6, ST7, WD7, RA0, RA1
-    sc.check( 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 0, 0 );  // def
+    //        C  ST0, WD0, ST1, WD1, ST2, WD2, ST3, WD3, ST4, WD4, ST5, WD5, ST6, WD6, ST7, WD7, RA0, RA1, RD0, RD1
+    sc.check( 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0 );  // def
+    sc.check( 1,   1,   5,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   5,   0 );  // def
   }
 }
