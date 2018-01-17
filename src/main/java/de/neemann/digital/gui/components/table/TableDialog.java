@@ -318,11 +318,16 @@ public class TableDialog extends JDialog {
         fileMenu.add(new ToolTipAction(Lang.get("menu_table_exportHex")) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JFileChooser fc = new MyFileChooser();
-                if (TableDialog.this.filename != null)
-                    fc.setSelectedFile(SaveAsHelper.checkSuffix(TableDialog.this.filename, "hex"));
-                new SaveAsHelper(TableDialog.this, fc, "hex")
-                        .checkOverwrite(file -> model.getTable().saveHex(file));
+                int res = JOptionPane.OK_OPTION;
+                if (model.getTable().getVars().size() > 20)
+                    res = JOptionPane.showConfirmDialog(TableDialog.this, Lang.get("msg_tableHasManyRowsConfirm"));
+                if (res == JOptionPane.OK_OPTION) {
+                    JFileChooser fc = new MyFileChooser();
+                    if (TableDialog.this.filename != null)
+                        fc.setSelectedFile(SaveAsHelper.checkSuffix(TableDialog.this.filename, "hex"));
+                    new SaveAsHelper(TableDialog.this, fc, "hex")
+                            .checkOverwrite(file -> model.getTable().saveHex(file));
+                }
             }
         }.setToolTip(Lang.get("menu_table_exportHex_tt")).createJMenuItem());
 
@@ -667,7 +672,7 @@ public class TableDialog extends JDialog {
         }
 
         @Override
-        public void resultFound(String name, Expression expression) throws FormatterException, ExpressionException {
+        public void resultFound(String name, Expression expression) throws FormatterException {
             if (count == 0)
                 firstExp = "<html>" + htmlFormatter.identifier(name) + "=" + htmlFormatter.format(expression) + "</html>";
             html.append("<tr>");
@@ -748,13 +753,16 @@ public class TableDialog extends JDialog {
         private final StringBuilder sb;
 
         private LaTeXExpressionListener(TruthTableTableModel model) throws ExpressionException {
-            String text = new TruthTableFormatterLaTeX().format(model.getTable());
-            sb = new StringBuilder(text);
+            sb = new StringBuilder();
+            if (model.getTable().getRows() <= 256) {
+                String text = new TruthTableFormatterLaTeX().format(model.getTable());
+                sb.append(text);
+            }
             sb.append("\\begin{eqnarray*}\n");
         }
 
         @Override
-        public void resultFound(String name, Expression expression) throws FormatterException, ExpressionException {
+        public void resultFound(String name, Expression expression) throws FormatterException {
             sb.append(FormatToTableLatex.formatIdentifier(name))
                     .append("&=&")
                     .append(FormatToExpression.FORMATTER_LATEX.format(expression))

@@ -12,6 +12,7 @@ import de.neemann.digital.analyse.quinemc.BoolTableByteArray;
 import de.neemann.digital.analyse.quinemc.ThreeStateValue;
 import de.neemann.digital.core.NodeException;
 import de.neemann.digital.core.Signal;
+import de.neemann.digital.lang.Lang;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -66,7 +67,10 @@ public class TruthTable {
      * @throws IOException IOException
      */
     public void saveHex(File filename) throws IOException {
-        try (Writer out = new OutputStreamWriter(new FileOutputStream(filename), "utf-8")) {
+        if (results.size() > 63)
+            throw new IOException(Lang.get("err_tableHasToManyResultColumns"));
+
+        try (Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), "utf-8"))) {
             saveHex(out);
         }
     }
@@ -81,15 +85,15 @@ public class TruthTable {
         writer.write("v2.0 raw\n");
         int count = results.get(0).getValues().size();
         for (int i = 0; i < count; i++) {
-            int val = 0;
-            int mask = 1;
+            long val = 0;
+            long mask = 1;
             for (Result r : results) {
                 ThreeStateValue v = r.getValues().get(i);
                 if (v == ThreeStateValue.one)
                     val |= mask;
                 mask *= 2;
             }
-            writer.write(Integer.toHexString(val));
+            writer.write(Long.toHexString(val));
             writer.write('\n');
         }
     }
@@ -102,6 +106,7 @@ public class TruthTable {
         xStream.aliasAttribute(Variable.class, "identifier", "name");
         xStream.alias("result", Result.class);
         xStream.alias("BoolTable", BoolTableByteArray.class);
+        xStream.alias("BoolTableEx", BoolTableExpanded.class);
         return xStream;
     }
 
@@ -235,29 +240,31 @@ public class TruthTable {
             sb.append(s.getIdentifier()).append("\t");
         for (Result s : results)
             sb.append(s.getName()).append("\t");
-        sb.append('\n');
 
-        for (int row = 0; row < getRows(); row++) {
-            for (int col = 0; col < variables.size(); col++) {
-                if (getBitSetter().getBit(row, col))
-                    sb.append("1\t");
-                else
-                    sb.append("0\t");
-            }
-            for (int col = 0; col < results.size(); col++) {
-                switch (results.get(col).getValues().get(row)) {
-                    case one:
+        if (getRows() <= 256) {
+            sb.append('\n');
+            for (int row = 0; row < getRows(); row++) {
+                for (int col = 0; col < variables.size(); col++) {
+                    if (getBitSetter().getBit(row, col))
                         sb.append("1\t");
-                        break;
-                    case zero:
+                    else
                         sb.append("0\t");
-                        break;
-                    default:
-                        sb.append("x\t");
-                        break;
                 }
+                for (int col = 0; col < results.size(); col++) {
+                    switch (results.get(col).getValues().get(row)) {
+                        case one:
+                            sb.append("1\t");
+                            break;
+                        case zero:
+                            sb.append("0\t");
+                            break;
+                        default:
+                            sb.append("x\t");
+                            break;
+                    }
+                }
+                sb.append("\n");
             }
-            sb.append("\n");
         }
         return sb.toString();
     }
@@ -401,6 +408,19 @@ public class TruthTable {
      */
     public BoolTable getResult(int result) {
         return results.get(result).getValues();
+    }
+
+    /**
+     * Returns the result with the given name
+     *
+     * @param resultName the result name
+     * @return the table representing the result or null if not found
+     */
+    public BoolTable getResult(String resultName) {
+        for (Result r : results)
+            if (r.getName().equals(resultName))
+                return r.getValues();
+        return null;
     }
 
     /**

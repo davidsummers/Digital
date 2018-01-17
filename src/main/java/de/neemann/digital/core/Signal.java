@@ -7,6 +7,7 @@ public final class Signal implements Comparable<Signal> {
     private final String name;
     private final ObservableValue value;
     private final Setter setter;
+    private IntFormat format = IntFormat.def;
     private String pinNumber;
     private boolean isPin = false;
 
@@ -54,6 +55,19 @@ public final class Signal implements Comparable<Signal> {
     }
 
     /**
+     * Sets the integer format to create a string
+     *
+     * @param format the format
+     * @return this for chained calls
+     */
+    public Signal setFormat(IntFormat format) {
+        if (format != null)
+            this.format = format;
+        return this;
+    }
+
+
+    /**
      * Gets the number of this pin.
      *
      * @return the pin number of -1 if no pin is given
@@ -83,7 +97,6 @@ public final class Signal implements Comparable<Signal> {
         Signal signal = (Signal) o;
 
         return name.equals(signal.name);
-
     }
 
     @Override
@@ -94,6 +107,13 @@ public final class Signal implements Comparable<Signal> {
     @Override
     public String toString() {
         return name;
+    }
+
+    /**
+     * @return the value in the specified format
+     */
+    public String getValueString() {
+        return format.formatToEdit(value.getCopy());
     }
 
     /**
@@ -130,7 +150,8 @@ public final class Signal implements Comparable<Signal> {
          * Has to modify the inner state and also has to update the outputs.
          *
          * @param value the value to set
+         * @param highZ true is value is in high z state
          */
-        void set(long value);
+        void set(long value, boolean highZ);
     }
 }
