@@ -508,8 +508,8 @@
     <string name="elem_Belt16x16_pin_RD0">The output 0 port value for RA0 address.</string>
     <string name="elem_Belt16x16_pin_RD1">The output 1 port value for RA1 address.</string>
     <string name="elem_Belt16x16_pin_CFRAME">The current frame count.</string>
-    <!--
     <string name="elem_Belt16x16_pin_ADDR">The address to read or write complete memory (using for spilling).</string>
+    <!--
     <string name="elem_Belt16x16_pin_R#/W">Read or write the complete Belt memory.</string>
     <string name="elem_Belt16x16_pin_NFRM">New FRAME signal (increments frame pointer).</string>
     <string name="elem_Belt16x16_pin_FADDR">Frame address</string>

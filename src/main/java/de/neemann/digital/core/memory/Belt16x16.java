@@ -40,7 +40,8 @@ public class Belt16x16 extends Node implements Element, RAMInterface
     input( "RA0"    ),
     input( "RA1"    ),
     input( "NFRAME" ),
-    input( "PFRAME" ))
+    input( "PFRAME" ),
+    input( "ADDR"   ))
     .addAttribute( Keys.ROTATE    )
     .addAttribute( Keys.BITS      )
     .addAttribute( Keys.ADDR_BITS )
@@ -74,6 +75,7 @@ public class Belt16x16 extends Node implements Element, RAMInterface
   private long                  m_wd5;
   private long                  m_wd6;
   private long                  m_wd7;
+  private long                  m_addr;
   
   private int                   m_CurrentFrame = 0;
   private boolean               m_lastClk = false;
@@ -100,7 +102,8 @@ public class Belt16x16 extends Node implements Element, RAMInterface
   private ObservableValue       m_ra1In;
   private ObservableValue       m_nframeIn;
   private ObservableValue       m_pframeIn;
-
+  private ObservableValue       m_AddrIn;
+  
   private final ObservableValue m_out0;
   private final ObservableValue m_out1;
   private final ObservableValue m_cframe;
@@ -129,27 +132,28 @@ public class Belt16x16 extends Node implements Element, RAMInterface
   @Override
   public void setInputs( ObservableValues inputs_ ) throws NodeException
   {
-    m_clk1In   = inputs_.get(  0 ).checkBits( 1,          this ).addObserverToValue( this );
-    m_str0In   = inputs_.get(  1 ).checkBits( 1,          this ).addObserverToValue( this );
-    m_wd0In    = inputs_.get(  2 ).checkBits( m_bits,     this ).addObserverToValue( this );
-    m_str1In   = inputs_.get(  3 ).checkBits( 1,          this ).addObserverToValue( this );
-    m_wd1In    = inputs_.get(  4 ).checkBits( m_bits,     this ).addObserverToValue( this );
-    m_str2In   = inputs_.get(  5 ).checkBits( 1,          this ).addObserverToValue( this );
-    m_wd2In    = inputs_.get(  6 ).checkBits( m_bits,     this ).addObserverToValue( this );
-    m_str3In   = inputs_.get(  7 ).checkBits( 1,          this ).addObserverToValue( this );
-    m_wd3In    = inputs_.get(  8 ).checkBits( m_bits,     this ).addObserverToValue( this );
-    m_str4In   = inputs_.get(  9 ).checkBits( 1,          this ).addObserverToValue( this );
-    m_wd4In    = inputs_.get( 10 ).checkBits( m_bits,     this ).addObserverToValue( this );
-    m_str5In   = inputs_.get( 11 ).checkBits( 1,          this ).addObserverToValue( this );
-    m_wd5In    = inputs_.get( 12 ).checkBits( m_bits,     this ).addObserverToValue( this );
-    m_str6In   = inputs_.get( 13 ).checkBits( 1,          this ).addObserverToValue( this );
-    m_wd6In    = inputs_.get( 14 ).checkBits( m_bits,     this ).addObserverToValue( this );
-    m_str7In   = inputs_.get( 15 ).checkBits( 1,          this ).addObserverToValue( this );
-    m_wd7In    = inputs_.get( 16 ).checkBits( m_bits,     this ).addObserverToValue( this );
-    m_ra0In    = inputs_.get( 17 ).checkBits( m_addrBits, this ).addObserverToValue( this );
-    m_ra1In    = inputs_.get( 18 ).checkBits( m_addrBits, this ).addObserverToValue( this );
-    m_nframeIn = inputs_.get( 19 ).checkBits( 1,          this ).addObserverToValue( this );
-    m_pframeIn = inputs_.get( 20 ).checkBits( 1,          this ).addObserverToValue( this );
+    m_clk1In   = inputs_.get(  0 ).checkBits( 1,              this ).addObserverToValue( this );
+    m_str0In   = inputs_.get(  1 ).checkBits( 1,              this ).addObserverToValue( this );
+    m_wd0In    = inputs_.get(  2 ).checkBits( m_bits,         this ).addObserverToValue( this );
+    m_str1In   = inputs_.get(  3 ).checkBits( 1,              this ).addObserverToValue( this );
+    m_wd1In    = inputs_.get(  4 ).checkBits( m_bits,         this ).addObserverToValue( this );
+    m_str2In   = inputs_.get(  5 ).checkBits( 1,              this ).addObserverToValue( this );
+    m_wd2In    = inputs_.get(  6 ).checkBits( m_bits,         this ).addObserverToValue( this );
+    m_str3In   = inputs_.get(  7 ).checkBits( 1,              this ).addObserverToValue( this );
+    m_wd3In    = inputs_.get(  8 ).checkBits( m_bits,         this ).addObserverToValue( this );
+    m_str4In   = inputs_.get(  9 ).checkBits( 1,              this ).addObserverToValue( this );
+    m_wd4In    = inputs_.get( 10 ).checkBits( m_bits,         this ).addObserverToValue( this );
+    m_str5In   = inputs_.get( 11 ).checkBits( 1,              this ).addObserverToValue( this );
+    m_wd5In    = inputs_.get( 12 ).checkBits( m_bits,         this ).addObserverToValue( this );
+    m_str6In   = inputs_.get( 13 ).checkBits( 1,              this ).addObserverToValue( this );
+    m_wd6In    = inputs_.get( 14 ).checkBits( m_bits,         this ).addObserverToValue( this );
+    m_str7In   = inputs_.get( 15 ).checkBits( 1,              this ).addObserverToValue( this );
+    m_wd7In    = inputs_.get( 16 ).checkBits( m_bits,         this ).addObserverToValue( this );
+    m_ra0In    = inputs_.get( 17 ).checkBits( m_addrBits,     this ).addObserverToValue( this );
+    m_ra1In    = inputs_.get( 18 ).checkBits( m_addrBits,     this ).addObserverToValue( this );
+    m_nframeIn = inputs_.get( 19 ).checkBits( 1,              this ).addObserverToValue( this );
+    m_pframeIn = inputs_.get( 20 ).checkBits( 1,              this ).addObserverToValue( this );
+    m_AddrIn   = inputs_.get( 21 ).checkBits( m_addrBits * 2, this ).addObserverToValue( this );
   }
 
   @Override
@@ -251,8 +255,9 @@ public class Belt16x16 extends Node implements Element, RAMInterface
     }
     
     
-    m_raddr0 = (int) m_ra0In.getValue( );
-    m_raddr1 = (int) m_ra1In.getValue( );
+    m_raddr0 = (int) m_ra0In.getValue(  );
+    m_raddr1 = (int) m_ra1In.getValue(  );
+    m_addr   = (int) m_AddrIn.getValue( );
     
     m_lastClk = clk;
   }

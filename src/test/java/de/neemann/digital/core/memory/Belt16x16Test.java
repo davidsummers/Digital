@@ -38,6 +38,7 @@ public class Belt16x16Test extends TestCase
     ObservableValue ra1    = new ObservableValue( "RA1",  2 );
     ObservableValue nframe = new ObservableValue( "NFRAME", 1 );
     ObservableValue pframe = new ObservableValue( "PFRAME", 1 );
+    ObservableValue addr   = new ObservableValue( "ADDR",   2 * 2 );
 
     Model model = new Model( );
     Belt16x16 out = model.add( new Belt16x16(
@@ -64,7 +65,8 @@ public class Belt16x16Test extends TestCase
                         ra0,
                         ra1,
                         nframe,
-                        pframe ) );
+                        pframe,
+                        addr ) );
 
     TestExecuter sc =
       new TestExecuter( model ).setInputs(
@@ -88,12 +90,13 @@ public class Belt16x16Test extends TestCase
         ra0,
         ra1,
         nframe,
-        pframe )
+        pframe,
+        addr )
         .setOutputs( out.getOutputs( ) );
-    //        C  ST0, WD0, ST1, WD1, ST2, WD2, ST3, WD3, ST4, WD4, ST5, WD5, ST6, WD6, ST7, WD7, RA0, RA1, NFRAME, PFRAME, RD0, RD1, CFRAME
-    sc.check( 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,      0,      0,   0,   0,      0 );  // def
-    sc.check( 1,   1,   5,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,      0,      0,   5,   0,      0 );  // store 5
-    sc.check( 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,      0,      0,   5,   0,      0 );  // clk = 0
-    sc.check( 1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,      1,      0,   0,   0,      1 );  // inc frame
+    //        C  ST0, WD0, ST1, WD1, ST2, WD2, ST3, WD3, ST4, WD4, ST5, WD5, ST6, WD6, ST7, WD7, RA0, RA1, NFRAME, PFRAME, ADDR, RD0, RD1, CFRAME
+    sc.check( 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,      0,      0,     0,  0,   0,      0 );  // def
+    sc.check( 1,   1,   5,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,      0,      0,     0,  5,   0,      0 );  // store 5
+    sc.check( 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,      0,      0,     0,  5,   0,      0 );  // clk = 0
+    sc.check( 1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,      1,      0,     0,  0,   0,      1 );  // inc frame
   }
 }
