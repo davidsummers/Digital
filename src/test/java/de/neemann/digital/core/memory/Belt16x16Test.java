@@ -93,10 +93,11 @@ public class Belt16x16Test extends TestCase
         pframe,
         addr )
         .setOutputs( out.getOutputs( ) );
-    //        C  ST0, WD0, ST1, WD1, ST2, WD2, ST3, WD3, ST4, WD4, ST5, WD5, ST6, WD6, ST7, WD7, RA0, RA1, NFRAME, PFRAME, ADDR, RD0, RD1, CFRAME
-    sc.check( 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,      0,      0,     0,  0,   0,      0 );  // def
-    sc.check( 1,   1,   5,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,      0,      0,     0,  5,   0,      0 );  // store 5
-    sc.check( 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,      0,      0,     0,  5,   0,      0 );  // clk = 0
-    sc.check( 1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,      1,      0,     0,  0,   0,      1 );  // inc frame
+    //        C  ST0, WD0, ST1, WD1, ST2, WD2, ST3, WD3, ST4, WD4, ST5, WD5, ST6, WD6, ST7, WD7, RA0, RA1, NFRAME, PFRAME, ADDR, RD0, RD1, CFRAME, DATA
+    sc.check( 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,      0,      0,     0,  0,   0,      0,    0 );  // def
+    sc.check( 1,   1,   5,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,      0,      0,     0,  5,   0,      0,    0 );  // store 5
+    sc.check( 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,      0,      0,     0,  5,   0,      0,    0 );  // clk = 0
+    sc.check( 1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,      1,      0,     0,  0,   0,      1,    0 );  // inc frame
+    sc.check( 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,      0,      0,     3,  0,   0,      1,    5 );  // Check stored address for 5.
   }
 }

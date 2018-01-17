@@ -75,7 +75,7 @@ public class Belt16x16 extends Node implements Element, RAMInterface
   private long                  m_wd5;
   private long                  m_wd6;
   private long                  m_wd7;
-  private long                  m_addr;
+  private int                   m_addr;
   
   private int                   m_CurrentFrame = 0;
   private boolean               m_lastClk = false;
@@ -107,6 +107,7 @@ public class Belt16x16 extends Node implements Element, RAMInterface
   private final ObservableValue m_out0;
   private final ObservableValue m_out1;
   private final ObservableValue m_cframe;
+  private final ObservableValue m_data;
 
 
   /**
@@ -122,6 +123,7 @@ public class Belt16x16 extends Node implements Element, RAMInterface
     m_out0   = new ObservableValue( "RD0",    m_bits     ).setPinDescription( DESCRIPTION );
     m_out1   = new ObservableValue( "RD1",    m_bits     ).setPinDescription( DESCRIPTION );
     m_cframe = new ObservableValue( "CFRAME", m_addrBits ).setPinDescription( DESCRIPTION );
+    m_data   = new ObservableValue( "DATA",   2 * m_addrBits ).setPinDescription( DESCRIPTION );
     m_size = 1 << m_addrBits;
     m_belt     = new DataField( m_size * m_size );
     m_Counters = new DataField( m_size );
@@ -159,7 +161,7 @@ public class Belt16x16 extends Node implements Element, RAMInterface
   @Override
   public ObservableValues getOutputs( )
   {
-    return new ObservableValues( m_out0, m_out1, m_cframe );
+    return new ObservableValues( m_out0, m_out1, m_cframe, m_data );
   }
 
   @Override
@@ -332,6 +334,7 @@ public class Belt16x16 extends Node implements Element, RAMInterface
     m_out0.setValue( GetBelt( m_raddr0 ) );    
     m_out1.setValue( GetBelt( m_raddr1 ) );
     m_cframe.setValue( m_CurrentFrame );
+    m_data.setValue( m_belt.getDataWord( m_addr ) );
   }
 
   @Override
