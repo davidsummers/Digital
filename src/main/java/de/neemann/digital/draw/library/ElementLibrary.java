@@ -184,13 +184,13 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
 
         addExternalJarComponents(jarFile);
 
-        populateNodeMap();
-
         custom = new ElementLibraryFolder(root, Lang.get("menu_custom"));
 
         File libPath = Settings.getInstance().get(Keys.SETTINGS_LIBRARY_PATH);
         if (libPath != null && libPath.exists())
             new ElementLibraryFolder(root, Lang.get("menu_library")).scanFolder(libPath);
+
+        populateNodeMap();
 
         isProgrammable.clear();
         root.traverse(libraryNode -> {
@@ -284,6 +284,13 @@ public class ElementLibrary implements Iterable<ElementLibrary.ElementContainer>
      */
     public void setShapeFactory(ShapeFactory shapeFactory) {
         this.shapeFactory = shapeFactory;
+    }
+
+    /**
+     * @return the shape factory
+     */
+    public ShapeFactory getShapeFactory() {
+        return shapeFactory;
     }
 
     /**

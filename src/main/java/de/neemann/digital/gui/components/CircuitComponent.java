@@ -391,20 +391,17 @@ public class CircuitComponent extends JComponent implements Circuit.ChangedListe
 
     /**
      * Opens the attribute editor
-     *
-     * @param parent the parent component
      */
-    public void editCircuitAttributes(Component parent) {
-        editCircuitAttributes(parent, ATTR_LIST);
+    public void editCircuitAttributes() {
+        editCircuitAttributes(ATTR_LIST);
     }
 
     /**
      * Opens the attribute editor
      *
-     * @param parent   the parent component
      * @param attrList the list of keys to edit
      */
-    public void editCircuitAttributes(Component parent, java.util.List<Key> attrList) {
+    public void editCircuitAttributes(java.util.List<Key> attrList) {
         ElementAttributes modifiedAttributes = new AttributeDialog(parent, attrList, circuit.getAttributes()).showDialog();
         if (modifiedAttributes != null)
             modify(new ModifyCircuitAttributes(modifiedAttributes));
@@ -833,6 +830,18 @@ public class CircuitComponent extends JComponent implements Circuit.ChangedListe
         }
     }
 
+    /**
+     * Transforms a circuit coordinate to a screen coordinate relative to this component.
+     *
+     * @param pos the circuit position
+     * @return the screen coordinate relative to this component
+     */
+    public Point transform(Vector pos) {
+        Point p = new Point();
+        transform.transform(new Point(pos.x, pos.y), p);
+        return p;
+    }
+
     private void enableAntiAlias(Graphics2D gr2) {
         if (antiAlias) {
             gr2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -964,14 +973,14 @@ public class CircuitComponent extends JComponent implements Circuit.ChangedListe
             if (list.size() > 0) {
                 Point p = new Point(e.getX(), e.getY());
                 SwingUtilities.convertPointToScreen(p, CircuitComponent.this);
-                AttributeDialog attributeDialog = new AttributeDialog(this, p, list, element.getElementAttributes()).setVisualElement(element);
+                AttributeDialog attributeDialog = new AttributeDialog(parent, p, list, element.getElementAttributes()).setVisualElement(element);
                 if (elementType instanceof ElementLibrary.ElementTypeDescriptionCustom) {
                     attributeDialog.addButton(Lang.get("attr_openCircuitLabel"), new ToolTipAction(Lang.get("attr_openCircuit")) {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             attributeDialog.dispose();
                             new Main.MainBuilder()
-                                    .setParent(CircuitComponent.this)
+                                    .setParent(parent)
                                     .setFileToOpen(((ElementLibrary.ElementTypeDescriptionCustom) elementType).getFile())
                                     .setLibrary(library)
                                     .denyMostFileActions()
@@ -1113,7 +1122,7 @@ public class CircuitComponent extends JComponent implements Circuit.ChangedListe
                     }
 
                 if (keyList.size() > 0) {
-                    AttributeDialog ad = new AttributeDialog(this, null, keyList, attr, true);
+                    AttributeDialog ad = new AttributeDialog(parent, null, keyList, attr, true);
                     for (Map.Entry<Key, Boolean> u : useKeyMap.entrySet())
                         ad.getCheckBoxes().get(u.getKey()).setSelected(u.getValue());
                     ElementAttributes mod = ad.showDialog();
@@ -1282,7 +1291,7 @@ public class CircuitComponent extends JComponent implements Circuit.ChangedListe
         if (list.size() == 1)
             vp = list.get(0);
         else if (list.size() > 1) {
-            ItemPicker<VisualElement> picker = new ItemPicker<>(CircuitComponent.this, list);
+            ItemPicker<VisualElement> picker = new ItemPicker<>(parent, list);
             vp = picker.select();
         }
         return vp;
