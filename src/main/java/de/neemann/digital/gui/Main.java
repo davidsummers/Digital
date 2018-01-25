@@ -114,7 +114,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
     private final JLabel statusLabel;
     private final StateManager stateManager = new StateManager();
     private final ScheduledThreadPoolExecutor timerExecutor = new ScheduledThreadPoolExecutor(1);
-    private final WindowPosManager windowPosManager = new WindowPosManager();
+    private final WindowPosManager windowPosManager;
     private final InsertHistory insertHistory;
     private final boolean keepPrefMainFile;
 
@@ -149,6 +149,8 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         super(Lang.get("digital"));
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setIconImages(IconCreator.createImages("icon32.png", "icon64.png", "icon128.png"));
+
+        windowPosManager=new WindowPosManager(this);
 
         keepPrefMainFile = builder.keepPrefMainFile;
 
@@ -611,7 +613,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         ToolTipAction editAttributes = new ToolTipAction(Lang.get("menu_editAttributes")) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                circuitComponent.editCircuitAttributes(Main.this);
+                circuitComponent.editCircuitAttributes();
             }
         }.setToolTip(Lang.get("menu_editAttributes_tt"));
 
@@ -874,7 +876,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
                     showErrorAndStopModel(Lang.get("msg_fastRunError"), e1);
                 }
             }
-        }.setToolTip(Lang.get("menu_fast_tt")).setEnabledChain(false);
+        }.setToolTip(Lang.get("menu_fast_tt")).setEnabledChain(false).setAccelerator("F7");
 
         ToolTipAction stoppedStateAction = stoppedState
                 .createToolTipAction(Lang.get("menu_element"), ICON_STOP)
@@ -886,7 +888,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
             public void actionPerformed(ActionEvent e) {
                 startTests();
             }
-        }.setToolTip(Lang.get("menu_runTests_tt"));
+        }.setToolTip(Lang.get("menu_runTests_tt")).setAccelerator("F8");
 
         ToolTipAction speedTest = new ToolTipAction(Lang.get("menu_speedTest")) {
             private NumberFormat format = new DecimalFormat("0.0");
@@ -1024,6 +1026,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
             }
         }
                 .setToolTip(Lang.get("menu_analyse_tt"))
+                .setAccelerator("F9")
                 .createJMenuItem());
 
         analyse.add(new ToolTipAction(Lang.get("menu_synthesise")) {
@@ -1133,14 +1136,20 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
 
             realTimeClockRunning = false;
             modelSync = null;
-            if (globalRunClock)
+            if (globalRunClock) {
+                int threadRunnerCount = 0;
                 for (Clock c : model.getClocks())
                     if (c.getFrequency() > 0) {
                         if (modelSync == null)
                             modelSync = new LockSync();
-                        model.addObserver(new RealTimeClock(model, c, timerExecutor, this, modelSync, this));
+                        final RealTimeClock realTimeClock = new RealTimeClock(model, c, timerExecutor, this, modelSync, this);
+                        model.addObserver(realTimeClock);
+                        if (realTimeClock.isThreadRunner()) threadRunnerCount++;
                         realTimeClockRunning = true;
                     }
+                if (threadRunnerCount > 1)
+                    throw new RuntimeException(Lang.get("err_moreThanOneFastClock"));
+            }
             if (modelSync == null)
                 modelSync = NoSync.INST;
 
@@ -1190,6 +1199,13 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
     private void showMeasurementDialog(ModelEvent updateEvent) {
         List<String> ordering = circuitComponent.getCircuit().getMeasurementOrdering();
         windowPosManager.register("probe", new ProbeDialog(this, model, updateEvent, ordering, modelSync, circuitComponent)).setVisible(true);
+    }
+
+    /**
+     * @return the model or null if no model is running
+     */
+    public Model getModel() {
+        return model;
     }
 
     private final Object modelLock = new Object();
@@ -1483,7 +1499,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
     }
 
     @Override
-    public void start(File romHex) throws RemoteException {
+    public void start(File romHex) {
         SwingUtilities.invokeLater(() -> {
             runModelState.enter(true, new RomLoader(romHex));
             circuitComponent.repaintNeeded();
@@ -1491,7 +1507,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
     }
 
     @Override
-    public void debug(File romHex) throws RemoteException {
+    public void debug(File romHex) {
         SwingUtilities.invokeLater(() -> {
             runModelState.enter(false, new RomLoader(romHex));
             circuitComponent.repaintNeeded();
@@ -1597,7 +1613,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
      */
     public static class MainBuilder {
         private File fileToOpen;
-        private Component parent;
+        private Window parent;
         private ElementLibrary library;
         private Circuit circuit;
         private boolean allowAllFileActions = true;
@@ -1627,7 +1643,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
          * @param parent the parent component
          * @return this for chained calls
          */
-        public MainBuilder setParent(Component parent) {
+        public MainBuilder setParent(Window parent) {
             this.parent = parent;
             return this;
         }
@@ -1675,7 +1691,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
          *
          * @return a new Main instance
          */
-        private Main build() {
+        public Main build() {
             return new Main(this);
         }
 

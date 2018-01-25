@@ -125,6 +125,8 @@ public class TableDialog extends JDialog {
         table.getInputMap().put(KeyStroke.getKeyStroke("X"), "X_ACTION");
         table.getActionMap().put("X_ACTION", new SetAction(2));
 
+        new TableReorderManager(this, table);
+
         allSolutionsDialog = new AllSolutionsDialog(this, font);
 
         JTableHeader header = table.getTableHeader();
@@ -166,7 +168,7 @@ public class TableDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ReorderInputs ri = new ReorderInputs(model.getTable());
-                if (new ElementOrderer<>(parent, Lang.get("menu_table_reorder_inputs"), ri.getItems())
+                if (new ElementOrderer<>(TableDialog.this, Lang.get("menu_table_reorder_inputs"), ri.getItems())
                         .addDeleteButton()
                         .addOkButton()
                         .showDialog()) {
@@ -192,7 +194,7 @@ public class TableDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ReorderOutputs ro = new ReorderOutputs(model.getTable());
-                if (new ElementOrderer<>(parent, Lang.get("menu_table_reorder_outputs"), ro.getItems())
+                if (new ElementOrderer<>(TableDialog.this, Lang.get("menu_table_reorder_outputs"), ro.getItems())
                         .addDeleteButton()
                         .addOkButton()
                         .showDialog()) {
@@ -222,15 +224,15 @@ public class TableDialog extends JDialog {
         bar.add(hardwareMenu);
         checkLastUsedGenerator();
 
+        JMenu karnaughMenu = new JMenu(Lang.get("menu_karnaughMap"));
         karnaughMenuAction = new ToolTipAction(Lang.get("menu_karnaughMap")) {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 kvMap.setVisible(true);
             }
-        }.setToolTip(Lang.get("menu_karnaughMap_tt"));
-        JMenuItem karnaughMenuItem = karnaughMenuAction.createJMenuItem();
-        bar.add(karnaughMenuItem);
-        karnaughMenuItem.setOpaque(false);
+        }.setToolTip(Lang.get("menu_karnaughMap_tt")).setAccelerator("F1");
+        karnaughMenu.add(karnaughMenuAction.createJMenuItem());
+        bar.add(karnaughMenu);
 
         setJMenuBar(bar);
 
@@ -391,7 +393,7 @@ public class TableDialog extends JDialog {
             public void actionPerformed(ActionEvent actionEvent) {
                 createCircuit(ExpressionModifier.IDENTITY);
             }
-        }.setToolTip(Lang.get("menu_table_createCircuit_tt")).createJMenuItem());
+        }.setToolTip(Lang.get("menu_table_createCircuit_tt")).setAccelerator("F2").enableAcceleratorIn(table).createJMenuItem());
         createMenu.add(new ToolTipAction(Lang.get("menu_table_createCircuitJK")) {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -448,7 +450,7 @@ public class TableDialog extends JDialog {
             register(hardware, new GenerateCUPL(atfDev::getCuplExporter, "ATF150x/" + atfDev.getMenuName() + "/CUPL"));
             register(hardware, new GenerateFile("tt2",
                     () -> atfDev.createExpressionToFileExporter(TableDialog.this, getProjectName()),
-                    "ATF150x/" + atfDev.getMenuName() + "/TT2",
+                    "ATF150x/" + atfDev.getMenuName() + "/TT2, JEDEC",
                     Lang.get("menu_table_createTT2_tt")));
         }
         createMenu.add(hardware);
@@ -507,7 +509,7 @@ public class TableDialog extends JDialog {
         }
     }
 
-    private void setModel(TruthTableTableModel model) {
+    void setModel(TruthTableTableModel model) {
         this.model = model;
         model.addTableModelListener(new CalculationTableModelListener());
         table.setModel(model);
@@ -561,6 +563,13 @@ public class TableDialog extends JDialog {
             lastGeneratedExpressions = null;
             new ErrorMessage(Lang.get("msg_errorDuringCalculation")).addCause(e1).show(this);
         }
+    }
+
+    /**
+     * @return the last generated expressions
+     */
+    public ExpressionListenerStore getLastGeneratedExpressions() {
+        return lastGeneratedExpressions;
     }
 
     private final class SizeAction extends AbstractAction {
@@ -791,7 +800,7 @@ public class TableDialog extends JDialog {
                 generator.generate(TableDialog.this, filename, model.getTable(), lastGeneratedExpressions);
                 setLastUsedGenerator(generator);
             } catch (Exception e1) {
-                new ErrorMessage(Lang.get("msg_errorDuringCalculation")).addCause(e1).show(TableDialog.this);
+                new ErrorMessage(Lang.get("msg_errorDuringHardwareExport")).addCause(e1).show(TableDialog.this);
             }
         }
     }
