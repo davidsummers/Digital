@@ -277,7 +277,7 @@ public class GuiTester {
     /**
      * Every test step implements this Runnable
      */
-    interface Runnable {
+    public interface Runnable {
         /**
          * Executed the test setp
          *
@@ -347,7 +347,7 @@ public class GuiTester {
         }
     }
 
-    interface WindowCheckInterface<W extends Window> {
+    public interface WindowCheckInterface<W extends Window> {
         void checkWindow(GuiTester guiTester, W window) throws Exception;
     }
 
