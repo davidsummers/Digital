@@ -834,6 +834,7 @@ The names of the variables may not be unique.</string>
     <string name="err_tableHasToManyResultColumns">The table has too many columns!</string>
     <string name="err_errorExportingZip">Error writing the zip file.</string>
     <string name="err_moreThanOneFastClock">Only one clock component with high frequency is allowed.</string>
+    <string name="err_circuitHasCycles">The circuit contains cycles. It's not possible to analyze such a circuit.</string>
 
     <string name="key_AddrBits">Address Bits</string><!-- ROM, RAMDualPort, RAMSinglePort, RAMSinglePortSel, EEPROM -->
     <string name="key_AddrBits_tt">Number of address bits used.</string>
@@ -979,7 +980,8 @@ The names of the variables may not be unique.</string>
         To assign the pins correctly, the pin numbers must be set on all inputs and outputs.</string>
     <string name="key_pinNumber">Pin number</string><!-- Out, In, Clock -->
     <string name="key_pinNumber_tt">Number of this pin. Used for the representation of a circuit as a DIL package and
-        the pin assignment when programming a CPLD.</string>
+        the pin assignment when programming a CPLD.
+        If there are several bits, all pin numbers can be specified as a comma-separated list.</string>
     <string name="key_pinCount">Number of DIL pins</string>
     <string name="key_pinCount_tt">Number of pins. A zero means that the number od pins is determined automatically.</string>
     <string name="key_defTreeSelect">Component tree view is visible at startup.</string>
@@ -1087,6 +1089,7 @@ The names of the variables may not be unique.</string>
     <string name="menu_newSub_tt">Opens a new window to create a new embedded circuit, which than can be used in this circuit.</string>
     <string name="menu_open">Open</string>
     <string name="menu_openRecent">Open Recent</string>
+    <string name="menu_openRecentNewWindow">Open Recent in New Window</string>
     <string name="menu_openWin">Open in New Window</string>
     <string name="menu_openWin_tt">Opens a circuit in a new window</string>
     <string name="menu_orderInputs">Order Inputs</string>
@@ -1294,7 +1297,8 @@ an &lt;a href=&quot;https://github.com/hneemann/Digital/issues/new?labels=enhanc
     <string name="msg_signal_N">Signal {0}</string>
     <string name="msg_invalidSignalsAnalysed">To perform an analysis of the circuit, all inputs and outputs
         must be uniquely named!</string>
-    <string name="msg_thereAreMissingPinNumbers">No pin numbers assigned to the pins {0}!</string>
+    <string name="msg_thereAreMissingPinNumbers">No pin numbers assigned to the pins {0}!
+        Free pins are automatically assigned. The circuit can therefore not be used on real hardware in most cases!</string>
     <string name="msg_modelHasErrors">You can only export a circuit without errors!</string>
     <string name="msg_noKVMapAvailable">No KV map available!</string>
     <string name="msg_dataNotUpdatedAnymore">Data will not be updated anymore!</string>
@@ -1303,6 +1307,8 @@ an &lt;a href=&quot;https://github.com/hneemann/Digital/issues/new?labels=enhanc
     <string name="msg_create CHNFile">Creation of CHN file.</string>
     <string name="msg_tableHasManyRowsConfirm">The table is very large, the export may take a while.
 Start export anyway?</string>
+    <string name="msg_circuitIsRequired">To create a hardware description, a circuit must first be created and analyzed.
+        A standalone truth table can not be used to generate a hardware description.</string>
 
     <string name="ok">Ok</string>
     <string name="rot_0">0°</string>

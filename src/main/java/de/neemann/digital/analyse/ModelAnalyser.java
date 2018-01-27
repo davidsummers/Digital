@@ -34,6 +34,7 @@ public class ModelAnalyser {
     private final ArrayList<Signal> inputs;
     private final ArrayList<Signal> outputs;
     private int uniqueIndex = 0;
+    private ModelAnalyserInfo modelAnalyzerInfo;
 
     /**
      * Creates a new instance
@@ -51,9 +52,13 @@ public class ModelAnalyser {
             throw new AnalyseException(e);
         }
 
+        modelAnalyzerInfo = new ModelAnalyserInfo(model);
+
         inputs = checkBinaryInputs(model.getInputs());
         checkUnique(inputs);
         outputs = checkBinaryOutputs(model.getOutputs());
+
+        modelAnalyzerInfo.setInOut(inputs, outputs);
 
         for (Node n : model)
             if (n.hasState() && !(n instanceof FlipflopD))
@@ -98,6 +103,10 @@ public class ModelAnalyser {
             throw new AnalyseException(Lang.get("err_analyseNoOutputs"));
     }
 
+    private ModelAnalyserInfo getModelAnalyzerInfo() {
+        return modelAnalyzerInfo;
+    }
+
     private String createUniqueName(FlipflopD ff) {
         ObservableValue q = ff.getOutputs().get(0);
         for (Signal o : outputs) {
@@ -128,14 +137,22 @@ public class ModelAnalyser {
                 outputs.add(s);
             else {
                 try {
-                    Splitter sp = Splitter.createOneToN(bits);
+                    Splitter sp = Splitter.createOneToN(bits, true);
                     sp.setInputs(s.getValue().asList());
+                    SplitPinString pins = SplitPinString.create(s);
 
                     final ObservableValues spOutputs = sp.getOutputs();
                     for (int i = spOutputs.size() - 1; i >= 0; i--)
-                        outputs.add(new Signal(s.getName() + i, spOutputs.get(i)));
+                        outputs.add(new Signal(s.getName() + i, spOutputs.get(i)).setPinNumber(pins.getPin(i)));
 
                     s.getValue().fireHasChanged();
+
+                    ArrayList<String> names = new ArrayList<>(bits);
+                    for (int i = 0; i < bits; i++)
+                        names.add(s.getName() + i);
+
+                    modelAnalyzerInfo.addOutputBus(s.getName(), names);
+
                 } catch (NodeException e) {
                     throw new AnalyseException(e);
                 }
@@ -162,13 +179,18 @@ public class ModelAnalyser {
                     });
                     out.fireHasChanged();
 
+                    SplitPinString pins = SplitPinString.create(s);
                     ObservableValues.Builder builder = new ObservableValues.Builder();
                     for (int i = bits - 1; i >= 0; i--) {
                         ObservableValue o = new ObservableValue(s.getName() + i, 1);
                         builder.add(o);
-                        inputs.add(new Signal(s.getName() + i, o));
+                        inputs.add(new Signal(s.getName() + i, o).setPinNumber(pins.getPin(i)));
                     }
-                    sp.setInputs(builder.reverse().build());
+                    final ObservableValues inputsList = builder.reverse().build();
+                    sp.setInputs(inputsList);
+
+                    modelAnalyzerInfo.addInputBus(s.getName(), inputsList.getNames());
+
                 } catch (NodeException e) {
                     throw new AnalyseException(e);
                 }
@@ -200,7 +222,7 @@ public class ModelAnalyser {
                     ff.getDInput().removeObserver(ff);
                     ff.getClock().removeObserver(ff);
 
-                    Splitter insp = Splitter.createOneToN(ff.getBits());
+                    Splitter insp = Splitter.createOneToN(ff.getBits(), false);
                     insp.setInputs(new ObservableValues(ff.getDInput()));
                     ff.getDInput().fireHasChanged();
 
@@ -330,17 +352,17 @@ public class ModelAnalyser {
     public TruthTable analyse() throws NodeException, PinException, BacktrackException, AnalyseException {
         LOGGER.debug("start to analyse the model...");
 
-        TruthTable tt = new TruthTable().setPinsWithoutNumber(model.getPinsWithoutNumber());
+        TruthTable tt = new TruthTable();
+        tt.setModelAnalyzerInfo(getModelAnalyzerInfo());
         for (Signal s : inputs)
             tt.addVariable(s.getName());
 
         for (Signal s : inputs)
-            tt.addPinNumber(s);
+            getModelAnalyzerInfo().addPinNumber(s);
         for (Signal s : outputs)
-            tt.addPinNumber(s);
+            getModelAnalyzerInfo().addPinNumber(s);
 
-        if (model.getClocks().size() == 1)
-            tt.setClockPin(model.getClocks().get(0).getClockPin());
+        CycleDetector.checkForCycles(inputs);
 
         DependencyAnalyser da = new DependencyAnalyser(this);
         long steps = da.getRequiredSteps(this);

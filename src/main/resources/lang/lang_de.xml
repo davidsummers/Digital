@@ -839,6 +839,7 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="err_tableHasToManyResultColumns">Die Tabelle hat zu viele Spalten!</string>
     <string name="err_errorExportingZip">Fehler beim Schreiben der ZIP-Datei.</string>
     <string name="err_moreThanOneFastClock">Es ist nur ein Taktelement mit hoher Frequenz erlaubt.</string>
+    <string name="err_circuitHasCycles">Die Schaltung enthält Zyklen und kann daher nicht analysiert werden.</string>
 
     <string name="key_AddrBits">Adress-Bits</string><!-- ROM, RAMDualPort, RAMSinglePort, RAMSinglePortSel, EEPROM -->
     <string name="key_AddrBits_tt">Anzahl der Adress-Bits, die verwendet werden.</string>
@@ -986,7 +987,8 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
         Um die Pins korrekt zuordnen zu können, ist an den Eingängen und Ausgängen die Pinnummer anzugeben.</string>
     <string name="key_pinNumber">Pinnummer</string><!-- Out, In, Clock -->
     <string name="key_pinNumber_tt">Nummer dieses Pins. Wird für die Darstellung einer Schaltung als DIL-Gehäuse und die
-        Pinzuordnung bei der Programmierung eines CPLD verwendet.</string>
+        Pinzuordnung bei der Programmierung eines CPLD verwendet.
+        Bei mehreren Bits, können alle Pinnummern als kommagetrennte Liste angegeben werden.</string>
     <string name="key_pinCount">Pinanzahl DIL</string>
     <string name="key_pinCount_tt">Anzahl der Pins des DILs. Wird hier eine 0 eingetragen, wird die Anzahl automatisch bestimmt.</string>
     <string name="key_defTreeSelect">Baumansicht beim Start anzeigen</string>
@@ -1096,6 +1098,7 @@ Sind evtl. die Namen der Variablen nicht eindeutig?</string>
     <string name="menu_newSub_tt">Öffnet ein neues Fenster, um darin eine neue eingebettete Teilschaltung zu erstellen.</string>
     <string name="menu_open">Öffnen</string>
     <string name="menu_openRecent">Zuletzt verwendet</string>
+    <string name="menu_openRecentNewWindow">Zuletzt verwendet in neuem Fenster</string>
     <string name="menu_openWin">Öffnen in neuem Fenster</string>
     <string name="menu_openWin_tt">Öffnet eine Schaltung in einem neuen Fenster</string>
     <string name="menu_orderInputs">Sortieren der Eingänge</string>
@@ -1307,7 +1310,9 @@ eine &lt;a href=&quot;https://github.com/hneemann/Digital/issues/new?labels=enha
     <string name="msg_signal_N">Leitung {0}</string>
     <string name="msg_invalidSignalsAnalysed">Um eine Analyse der Schaltung durchzuführen, müssen alle
         Eingänge und Ausgänge eindeutig benannt sein!</string>
-    <string name="msg_thereAreMissingPinNumbers">Für die Pins {0} wurden keine Pinnummern festgelegt!</string>
+    <string name="msg_thereAreMissingPinNumbers">Für die Pins {0} wurden keine Pinnummern festgelegt!
+        Es werden automatisch freie Pins zugeordnet. Die Schaltung kann damit auf realer Hardware in der Regel nicht
+        verwendet werden!</string>
     <string name="msg_modelHasErrors">Es kann nur eine fehlerfreie Schaltung exportiert werden!</string>
     <string name="msg_noKVMapAvailable">Keine KV-Tafel verfügbar!</string>
     <string name="msg_dataNotUpdatedAnymore">Daten werden nicht mehr aktualisiert!</string>
@@ -1316,6 +1321,8 @@ eine &lt;a href=&quot;https://github.com/hneemann/Digital/issues/new?labels=enha
     <string name="msg_create CHNFile">Erzeugen der CHN-Datei</string>
     <string name="msg_tableHasManyRowsConfirm">Die Tabelle ist sehr groß, der Export kann etwas dauern.
 Soll dennoch exportiert werden?</string>
+    <string name="msg_circuitIsRequired">Um eine Hardwarebeschreibung zu erzeugen, muss zuvor eine Schaltung erstellt
+        und analysiert werden. Aus nur einer Wahrheitstabelle kann keine Hardwarebeschreibung erzeugt werden.</string>
 
     <string name="ok">Ok</string>
     <string name="rot_0">0°</string>
