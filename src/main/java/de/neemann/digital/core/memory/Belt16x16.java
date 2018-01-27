@@ -41,7 +41,9 @@ public class Belt16x16 extends Node implements Element, RAMInterface
     input( "RA1"    ),
     input( "NFRAME" ),
     input( "PFRAME" ),
-    input( "ADDR"   ))
+    input( "ADDR"   ),
+    input( "WDATA"  ),
+    input( "WSTR"   ))
     .addAttribute( Keys.ROTATE    )
     .addAttribute( Keys.BITS      )
     .addAttribute( Keys.ADDR_BITS )
@@ -76,6 +78,8 @@ public class Belt16x16 extends Node implements Element, RAMInterface
   private long                  m_wd6;
   private long                  m_wd7;
   private int                   m_addr;
+  private boolean               m_WStr;
+  private long                  m_WData;
   
   private int                   m_CurrentFrame = 0;
   private boolean               m_lastClk = false;
@@ -103,6 +107,8 @@ public class Belt16x16 extends Node implements Element, RAMInterface
   private ObservableValue       m_nframeIn;
   private ObservableValue       m_pframeIn;
   private ObservableValue       m_AddrIn;
+  private ObservableValue       m_WDataIn;
+  private ObservableValue       m_WStrIn;
   
   private final ObservableValue m_out0;
   private final ObservableValue m_out1;
@@ -120,15 +126,15 @@ public class Belt16x16 extends Node implements Element, RAMInterface
     super( true ); // true = hasState
     m_bits     = attr_.get( Keys.BITS      );
     m_addrBits = attr_.get( Keys.ADDR_BITS );
-    m_out0   = new ObservableValue( "RD0",    m_bits     ).setPinDescription( DESCRIPTION );
-    m_out1   = new ObservableValue( "RD1",    m_bits     ).setPinDescription( DESCRIPTION );
-    m_cframe = new ObservableValue( "CFRAME", m_addrBits ).setPinDescription( DESCRIPTION );
-    m_data   = new ObservableValue( "DATA",   2 * m_addrBits ).setPinDescription( DESCRIPTION );
-    m_size = 1 << m_addrBits;
+    m_out0     = new ObservableValue( "RD0",    m_bits     ).setPinDescription( DESCRIPTION );
+    m_out1     = new ObservableValue( "RD1",    m_bits     ).setPinDescription( DESCRIPTION );
+    m_cframe   = new ObservableValue( "CFRAME", m_addrBits ).setPinDescription( DESCRIPTION );
+    m_data     = new ObservableValue( "DATA",   m_bits     ).setPinDescription( DESCRIPTION );
+    m_size     = 1 << m_addrBits;
     m_belt     = new DataField( m_size * m_size );
     m_Counters = new DataField( m_size );
     m_Pointers = new DataField( m_size );
-    m_label = attr_.getCleanLabel( );
+    m_label    = attr_.getCleanLabel( );
   }
 
   @Override
@@ -156,6 +162,8 @@ public class Belt16x16 extends Node implements Element, RAMInterface
     m_nframeIn = inputs_.get( 19 ).checkBits( 1,              this ).addObserverToValue( this );
     m_pframeIn = inputs_.get( 20 ).checkBits( 1,              this ).addObserverToValue( this );
     m_AddrIn   = inputs_.get( 21 ).checkBits( m_addrBits * 2, this ).addObserverToValue( this );
+    m_WDataIn  = inputs_.get( 22 ).checkBits( m_bits,         this ).addObserverToValue( this );
+    m_WStrIn   = inputs_.get( 23 ).checkBits( 1,              this ).addObserverToValue( this );
   }
 
   @Override
@@ -171,14 +179,15 @@ public class Belt16x16 extends Node implements Element, RAMInterface
     int currentCount = 0;
     int currentPointer = 0;
     boolean clk = m_clk1In.getBool( );
-    m_str0 = m_str0In.getBool();
-    m_str1 = m_str1In.getBool();
-    m_str2 = m_str2In.getBool();
-    m_str3 = m_str3In.getBool();
-    m_str4 = m_str4In.getBool();
-    m_str5 = m_str5In.getBool();
-    m_str6 = m_str6In.getBool();
-    m_str7 = m_str7In.getBool();
+    m_str0 = m_str0In.getBool( );
+    m_str1 = m_str1In.getBool( );
+    m_str2 = m_str2In.getBool( );
+    m_str3 = m_str3In.getBool( );
+    m_str4 = m_str4In.getBool( );
+    m_str5 = m_str5In.getBool( );
+    m_str6 = m_str6In.getBool( );
+    m_str7 = m_str7In.getBool( );
+    m_WStr = m_WStrIn.getBool( );
     
     if ( !m_lastClk && clk )
     {      
@@ -232,6 +241,11 @@ public class Belt16x16 extends Node implements Element, RAMInterface
       
       m_nframe = m_nframeIn.getBool( );
       m_pframe = m_pframeIn.getBool( );
+      
+      if ( m_WStr )
+      {
+        m_WData  = m_WDataIn.getValue( );
+      }
     }
     else
     {
@@ -243,6 +257,7 @@ public class Belt16x16 extends Node implements Element, RAMInterface
       m_str5 = false;
       m_str6 = false;
       m_str7 = false;
+      m_WStr = false;
     }
         
     if ( storeCount > 0 )
@@ -329,6 +344,12 @@ public class Belt16x16 extends Node implements Element, RAMInterface
       boolean minusOne = true;
       m_CurrentFrame = MaxSize( m_CurrentFrame - 1, minusOne );
       m_pframe = false;
+    }
+    
+    if ( m_WStr )
+    {
+      m_belt.setData( m_addr, m_WData );
+      m_WStr = false;
     }
     
     m_out0.setValue( GetBelt( m_raddr0 ) );    
