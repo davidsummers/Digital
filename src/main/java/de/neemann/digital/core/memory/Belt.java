@@ -14,12 +14,12 @@ import java.util.HashSet;
  *
  * @author david@summersoft.fay-ar.us
  */
-public class Belt16x16 extends Node implements Element, RAMInterface
+public class Belt extends Node implements Element, RAMInterface
 {
   /**
    * The RAMs {@link ElementTypeDescription}
    */
-  public static final ElementTypeDescription DESCRIPTION = new ElementTypeDescription( Belt16x16.class,
+  public static final ElementTypeDescription DESCRIPTION = new ElementTypeDescription( Belt.class,
     input( "C"      ),
     input( "STR0"   ),
     input( "WD0"    ),
@@ -121,7 +121,7 @@ public class Belt16x16 extends Node implements Element, RAMInterface
    *
    * @param attr the elements attributes
    */
-  public Belt16x16( ElementAttributes attr_ )
+  public Belt( ElementAttributes attr_ )
   {
     super( true ); // true = hasState
     m_bits     = attr_.get( Keys.BITS      );

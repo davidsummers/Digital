@@ -13,7 +13,7 @@ import static de.neemann.digital.core.ObservableValues.ovs;
 /**
  * @author hneemann
  */
-public class Belt16x16Test extends TestCase
+public class BeltTest extends TestCase
 {
   public void testRAM() throws Exception
   {
@@ -44,7 +44,7 @@ public class Belt16x16Test extends TestCase
     ObservableValue wStr   = new ObservableValue( "WSTR",   1 );
     
     Model model = new Model( );
-    Belt16x16 out = model.add( new Belt16x16(
+    Belt out = model.add( new Belt(
       new ElementAttributes( )
         .set( Keys.ADDR_BITS, 2 ) // Belt length of 4 addresses.
         .setBits( 8 ) ) );        // Data size   of 8 bits.
