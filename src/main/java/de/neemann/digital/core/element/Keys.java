@@ -52,6 +52,16 @@ public final class Keys {
             .setComboBoxValues(new Integer[]{2, 3, 4, 5})
             .setMin(2);
 
+
+    /**
+     * the delay time used by the delay component
+     */
+    public static final Key.KeyInteger DELAY_TIME
+            = new Key.KeyInteger("delayTime", 1)
+            .setComboBoxValues(new Integer[]{1, 2, 3, 4, 5})
+            .setMin(1)
+            .setMax(20);
+
     /**
      * The elements label
      */
@@ -118,6 +128,12 @@ public final class Keys {
      */
     public static final Key<Boolean> RUN_AT_REAL_TIME
             = new Key<>("runRealTime", false);
+
+    /**
+     * inverts the output of a gate
+     */
+    public static final Key<Boolean> INVERT_OUTPUT
+            = new Key<>("invertOutput", true);
 
     /**
      * The real time frequency of the clock

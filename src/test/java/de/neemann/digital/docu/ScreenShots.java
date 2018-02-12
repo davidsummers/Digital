@@ -1,13 +1,20 @@
 package de.neemann.digital.docu;
 
+import de.neemann.digital.core.element.Keys;
 import de.neemann.digital.gui.Main;
+import de.neemann.digital.gui.Settings;
 import de.neemann.digital.gui.components.AttributeDialog;
+import de.neemann.digital.gui.components.expression.ExpressionDialog;
 import de.neemann.digital.gui.components.graphics.GraphicDialog;
 import de.neemann.digital.gui.components.karnaugh.KarnaughMapDialog;
 import de.neemann.digital.gui.components.table.TableDialog;
+import de.neemann.digital.gui.components.testing.TestCaseDescriptionDialog;
+import de.neemann.digital.gui.components.testing.ValueTableDialog;
 import de.neemann.digital.integration.GuiTester;
 import de.neemann.digital.integration.Resources;
+import de.neemann.digital.integration.TestInGUI;
 import de.neemann.digital.lang.Lang;
+import de.neemann.digital.testing.TestCaseElement;
 import de.neemann.gui.language.Language;
 
 import javax.imageio.ImageIO;
@@ -25,17 +32,40 @@ import static de.neemann.digital.draw.shapes.GenericShape.SIZE;
  */
 public class ScreenShots {
 
+    private static final int WIN_DX = 850;
+    private static final int WIN_DY = 500;
     private static GraphicDialog graphic;
 
     public static void main(String[] args) {
-        mainScreenShot();
+//        mainScreenShot();
 //        firstSteps();
+//        hierarchicalDesign();
+//        all();
+    }
+
+    private static void all() {
+        // english
+        Lang.setActualRuntimeLanguage(new Language("en"));
+        Settings.getInstance().getAttributes()
+                .set(Keys.SETTINGS_DEFAULT_TREESELECT, false)
+                .set(Keys.SETTINGS_GRID, true)
+                .set(Keys.SETTINGS_IEEE_SHAPES, true);
+        mainScreenShot();
+        firstSteps();
+        hierarchicalDesign();
+
+        // german
+        Lang.setActualRuntimeLanguage(new Language("de"));
+        Settings.getInstance().getAttributes()
+                .set(Keys.SETTINGS_IEEE_SHAPES, false);
+        firstSteps();
+        hierarchicalDesign();
     }
 
     private static void mainScreenShot() {
         Lang.setActualRuntimeLanguage(new Language("en"));
-        new GuiTester("../../main/dig/processor/Processor.dig")
-                .add(new GuiTester.WindowCheck<>(Main.class, (gt, m) -> m.setTitle("Processor.dig - Digital")))
+        Settings.getInstance().getAttributes().set(Keys.SETTINGS_IEEE_SHAPES, true);
+        new GuiTester("../../main/dig/processor/Processor.dig", "examples/processor/Processor.dig")
                 .press(' ')
                 .delay(500)
                 .add(new GuiTester.WindowCheck<>(GraphicDialog.class, (gt, gd) -> {
@@ -48,17 +78,60 @@ public class ScreenShots {
                 .add((gt) -> graphic.dispose())
                 .delay(500)
                 .press("F1")
-                .add(new MainScreenShot())
+                .add(new MainScreenShot("screenshot.png"))
+                .execute();
+        new GuiTester()
+                .press("F10")
+                .press("RIGHT", 4)
+                .press("DOWN", 3)
+                .press("ENTER")
+                .delay(500)
+                .press("control typed a")
+                .type("A B + B !C + A !C")
+                .add(new GuiTester.SetFocusTo<>(ExpressionDialog.class,
+                        comp -> comp instanceof JButton && ((JButton) comp).getText().equals(Lang.get("btn_create"))))
+                .press("SPACE")
+                .delay(500)
+                .press("control typed -", 1)
+                .add(new GuiTester.WindowCheck<>(Main.class,
+                        (gt, main) -> main.getCircuitComponent().translateCircuit(-120, 0)))
+                .delay(500)
+                .press("F9")
+                .delay(500)
+                .add(new GuiTester.WindowCheck<>(TableDialog.class, (gt, td) -> {
+                    td.getContentPane().setPreferredSize(new Dimension(370, 280));
+                    td.pack();
+                    final Point location = td.getParent().getLocation();
+                    location.x += 640;
+                    location.y += 410;
+                    td.setLocation(location);
+                }))
+                .delay(500)
+                .press("F1")
+                .delay(500)
+                .add(new GuiTester.WindowCheck<>(KarnaughMapDialog.class, (gt, td) -> {
+                    final Point location = td.getParent().getLocation();
+                    location.x -= 150;
+                    location.y -= 340;
+                    td.setLocation(location);
+                    td.getContentPane().setPreferredSize(new Dimension(390, 300));
+                    td.pack();
+                }))
+                .delay(500)
+                .add(new MainScreenShot("screenshot2.png"))
+                .add(new GuiTester.CloseTopMost())
+                .add(new GuiTester.CloseTopMost())
+                .add(new GuiTester.CloseTopMost())
                 .execute();
     }
 
     // Set all settings as needed before start this method
-    public static void firstSteps() {
+    private static void firstSteps() {
+        ScreenShot.n = 0;
         int x = 300;
         int y = 180;
         new GuiTester()
-                .add(new GuiTester.WindowCheck<>(Main.class, (gt, w) -> w.setSize(850, 500)))
-                .add(new ScreenShot<>(Main.class))
+                .add(new GuiTester.WindowCheck<>(Main.class, (gt, w) -> w.setSize(WIN_DX, WIN_DY)))
                 // input
                 .press("F10")
                 .press("RIGHT", 5)
@@ -95,7 +168,6 @@ public class ScreenShots {
                 // wires
                 .add(new ClickAtCircuit(x, y - SIZE, InputEvent.BUTTON1_MASK))
                 .add(new ClickAtCircuit(x + SIZE * 2, y - SIZE, InputEvent.BUTTON1_MASK))
-                .add(new ScreenShot<>(Main.class))
                 .add(new ClickAtCircuit(x, y + SIZE, InputEvent.BUTTON1_MASK))
                 .add(new ClickAtCircuit(x + SIZE * 2, y + SIZE, InputEvent.BUTTON1_MASK))
                 .add(new ClickAtCircuit(x + SIZE * 5, y, InputEvent.BUTTON1_MASK))
@@ -128,33 +200,121 @@ public class ScreenShots {
                     location.x += 10;
                     location.y += 10;
                     td.setLocation(location);
-                    td.getContentPane().setPreferredSize(new Dimension(400, 400));
+                    td.getContentPane().setPreferredSize(new Dimension(370, 400));
                     td.pack();
                 }))
                 .delay(500)
                 .add(new ScreenShot<>(TableDialog.class).useParent())
+                // k-map
                 .press("F10")
                 .press("RIGHT", 5)
                 .press("DOWN", 1)
                 .add(new ScreenShot<>(TableDialog.class).useParent())
                 .press("ENTER")
-                // k-map
+                .delay(500)
+                .add(new GuiTester.WindowCheck<>(KarnaughMapDialog.class, (gt, td) -> {
+                    td.getContentPane().setPreferredSize(new Dimension(300, 300));
+                    td.pack();
+                }))
                 .delay(500)
                 .add(new ScreenShot<>(KarnaughMapDialog.class).useParent().useParent())
                 .execute();
     }
 
 
-    private static class MainScreenShot extends GuiTester.WindowCheck<Main> {
+    private static void hierarchicalDesign() {
+        ScreenShot.n = 20;
+        new GuiTester("dig/test/docu/halfAdder.dig", "halfAdder.dig")
+                .add(new GuiTester.WindowCheck<>(Main.class, (gt, w) -> w.setSize(WIN_DX, WIN_DY)))
+                .press("control typed -", 4)
+                .delay(500)
+                .add(new ScreenShot<>(Main.class))
+                .execute();
+        new GuiTester("dig/test/docu/fullAdder.dig", "fullAdder.dig")
+                .add(new GuiTester.WindowCheck<>(Main.class, (gt, w) -> w.setSize(WIN_DX, WIN_DY)))
+                .delay(500)
+                .add(new ScreenShot<>(Main.class))
+                .add(new TestInGUI.SetMouseToElement((v) -> v.equalsDescription(TestCaseElement.TESTCASEDESCRIPTION)))
+                .mouseClick(InputEvent.BUTTON3_MASK)
+                .delay(500)
+                .add(new GuiTester.WindowCheck<>(AttributeDialog.class, (gt, w) -> {
+                    Point p = w.getLocation();
+                    p.y -= 50;
+                    p.x -= 70;
+                    w.setLocation(p);
+                }))
+                .delay(500)
+                .press("TAB", "SPACE")
+                .delay(500)
+                .add(new GuiTester.WindowCheck<>(TestCaseDescriptionDialog.class, (gt, w) -> {
+                    Point p = w.getLocation();
+                    p.y -= 50;
+                    p.x -= 50;
+                    w.setLocation(p);
+                    w.getContentPane().setPreferredSize(new Dimension(400, 300));
+                    w.pack();
+                }))
+                .delay(500)
+                .add(new ScreenShot<>(TestCaseDescriptionDialog.class).useParent().useParent())
+                .add(new GuiTester.CloseTopMost())
+                .add(new GuiTester.CloseTopMost())
+                .press("F8")
+                .add(new GuiTester.WindowCheck<>(ValueTableDialog.class, (gt, w) -> {
+                    Point p = w.getLocation();
+                    p.y += 90;
+                    w.setLocation(p);
+                    w.getContentPane().setPreferredSize(new Dimension(400, 300));
+                    w.pack();
+                }))
+                .add(new ScreenShot<>(ValueTableDialog.class).useParent())
+                .execute();
+        new GuiTester("dig/test/docu/rcAdder.dig", "rcAdder.dig")
+                .add(new GuiTester.WindowCheck<>(Main.class, (gt, w) -> w.setSize(WIN_DX, WIN_DY)))
+                .delay(500)
+                .add(new ScreenShot<>(Main.class))
+                .add(new TestInGUI.SetMouseToElement((v) -> v.equalsDescription(TestCaseElement.TESTCASEDESCRIPTION)))
+                .mouseClick(InputEvent.BUTTON3_MASK)
+                .delay(500)
+                .add(new GuiTester.WindowCheck<>(AttributeDialog.class, (gt, w) -> {
+                    Point p = w.getLocation();
+                    p.y -= 50;
+                    w.setLocation(p);
+                }))
+                .delay(500)
+                .press("TAB", "SPACE")
+                .delay(500)
+                .add(new GuiTester.WindowCheck<>(TestCaseDescriptionDialog.class, (gt, w) -> {
+                    Point p = w.getLocation();
+                    p.y -= 50;
+                    w.setLocation(p);
+                    w.getContentPane().setPreferredSize(new Dimension(400, 300));
+                    w.pack();
+                }))
+                .delay(500)
+                .add(new ScreenShot<>(TestCaseDescriptionDialog.class).useParent().useParent())
+                .execute();
+    }
 
-        MainScreenShot() {
-            super(Main.class);
+
+    private static class MainScreenShot implements GuiTester.Runnable {
+
+        private final String name;
+
+        MainScreenShot(String name) {
+            this.name = name;
         }
 
         @Override
-        public void checkWindow(GuiTester guiTester, Main main) throws Exception {
+        public void run(GuiTester guiTester) throws Exception {
+            Window main = FocusManager.getCurrentManager().getActiveWindow();
+            while (!(main instanceof Main)) {
+                main = (Window) main.getParent();
+                if (main == null)
+                    throw new RuntimeException("Main not found!");
+            }
+
             BufferedImage image = guiTester.getRobot().createScreenCapture(main.getBounds());
-            File file = new File(Resources.getRoot(), "../../../screenshot.png");
+            File file = new File(Resources.getRoot().getParentFile().getParentFile().getParentFile(), name);
             ImageIO.write(image, "png", file);
         }
     }

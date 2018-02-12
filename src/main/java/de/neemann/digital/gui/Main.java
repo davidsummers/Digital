@@ -85,7 +85,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
     /**
      * @return true if experimental features are enabled
      */
-    public static boolean enableExperimental() {
+    public static boolean isExperimentalMode() {
         return experimental;
     }
 
@@ -225,6 +225,24 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         library.addListener(librarySelector);
         menuBar.add(librarySelector.buildMenu(insertHistory, circuitComponent));
 
+        JMenu helpMenu = new JMenu(Lang.get("menu_help"));
+        helpMenu.add(new ToolTipAction(Lang.get("menu_help_elements")) {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                try {
+                    new ElementHelpDialog(Main.this, library, shapeFactory).setVisible(true);
+                } catch (NodeException | PinException e) {
+                    new ErrorMessage(Lang.get("msg_creatingHelp")).addCause(e).show(Main.this);
+                }
+            }
+        }.setToolTip(Lang.get("menu_help_elements_tt")).createJMenuItem());
+        new DocumentationLocator().addMenuTo(helpMenu);
+        helpMenu.addSeparator();
+        helpMenu.add(InfoDialog.getInstance().createMenuItem(this, MESSAGE));
+        menuBar.add(helpMenu);
+
+        setJMenuBar(menuBar);
+
         addWindowListener(new ClosingWindowListener(this, this));
         addWindowListener(new WindowAdapter() {
             @Override
@@ -241,20 +259,6 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         });
 
         getContentPane().add(toolBar, BorderLayout.NORTH);
-
-        setJMenuBar(menuBar);
-        JMenu help = InfoDialog.getInstance().addToFrame(this, MESSAGE);
-        help.add(new ToolTipAction(Lang.get("menu_help_elements")) {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                try {
-                    new ElementHelpDialog(Main.this, library, shapeFactory).setVisible(true);
-                } catch (NodeException | PinException e) {
-                    new ErrorMessage(Lang.get("msg_creatingHelp")).addCause(e).show(Main.this);
-                }
-            }
-        }.setToolTip(Lang.get("menu_help_elements_tt")).createJMenuItem());
-        new DocumentationLocator().addMenuTo(help);
 
         new ToolTipAction("insertLast") {
             @Override
@@ -476,6 +480,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
                                 switch (res) {
                                     case 0:
                                         saveFile(file, true);
+                                        library.setRootFilePath(file.getParentFile());
                                         break;
                                     case 1:
                                         saveAsHelper.retryFileSelect();
@@ -503,7 +508,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         export.add(new ExportAction(Lang.get("menu_exportPNGSmall"), "png", (out) -> new GraphicsImage(out, "PNG", 1)));
         export.add(new ExportAction(Lang.get("menu_exportPNGLarge"), "png", (out) -> new GraphicsImage(out, "PNG", 2)));
 
-        if (enableExperimental())
+        if (isExperimentalMode())
             export.add(new ExportGifAction(Lang.get("menu_exportAnimatedGIF")));
 
         export.add(new ExportZipAction(this).createJMenuItem());
@@ -696,6 +701,14 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
             }
         }.setToolTip(Lang.get("menu_insertAsNew_tt"));
 
+        ToolTipAction labelPins = new ToolTipAction(Lang.get("menu_labelPins")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                circuitComponent.labelPins();
+                ensureModelIsStopped();
+            }
+        }.setToolTip(Lang.get("menu_labelPins_tt"));
+
         edit.add(circuitComponent.getUndoAction().createJMenuItemNoIcon());
         edit.add(circuitComponent.getRedoAction().createJMenuItemNoIcon());
         edit.addSeparator();
@@ -703,6 +716,7 @@ public final class Main extends JFrame implements ClosingWindowListener.ConfirmS
         edit.add(actualToDefault.createJMenuItem());
         edit.add(restoreAllFuses.createJMenuItem());
         edit.add(createSpecialEditMenu());
+        edit.add(labelPins.createJMenuItem());
         edit.addSeparator();
         edit.add(orderInputs.createJMenuItem());
         edit.add(orderOutputs.createJMenuItem());

@@ -109,7 +109,9 @@
     <string name="elem_LookUpTable_pin_out">Returns the stored value at the address set via the inputs.</string>
     <string name="elem_Delay">Delay</string>
     <string name="elem_Delay_tt">Delays the signal by on propagation delay time.
-        In Digital all gates have the same propagation delay.
+        Delays a signal for an adjustable number of gate delays.
+        All other components in Digital have a gate delay of on propagation delay time.
+        This component can be used to realize any necessary propagation delay.
     </string>
     <string name="elem_Delay_pin_in">Input of the signal to be delayed.</string>
     <string name="elem_Delay_pin_out">The input signal delayed by one gate delay time.</string>
@@ -349,7 +351,9 @@
     <string name="elem_D_FF">D-FlipFlop</string>
     <string name="elem_D_FF_short">D</string>
     <string name="elem_D_FF_tt">A component used to store a value.
-        The value on pin D is stored on a rising edge of the clock pin C.</string>
+        The value on pin D is stored on a rising edge of the clock pin C.
+        The bit width can be selected, which allows to store multiple bits.
+    </string>
     <string name="elem_D_FF_pin_D">Input of the bit to be stored.</string>
     <string name="elem_D_FF_pin_C">Clock pin to store a value.
         The value on input D is stored on a rising edge of this pin.</string>
@@ -380,6 +384,7 @@
     <string name="elem_D_FF_AS_tt">A component used to store a value.
         The value on pin D is stored on a rising edge of the clock pin C.
         There are two additional inputs which set or reset the state immediately without a clock signal.
+        The bit width can be selected, which allows to store multiple bits.
     </string>
     <string name="elem_D_FF_AS_pin_D">Input of the bit to be stored.</string>
     <string name="elem_D_FF_AS_pin_C">Control pin to store a bit. The bit on input D is stored on a rising edge of this pin.</string>
@@ -393,7 +398,8 @@
 
     <string name="elem_Register">Register</string>
     <string name="elem_Register_short">Reg</string>
-    <string name="elem_Register_tt">A component to store values. The length of the data word can be selected in the attributes dialog.</string>
+    <string name="elem_Register_tt">A component to store values. The bit width of the data word can be selected.
+        Unlike a D flip-flop, the register provides an input which enables the clock.</string>
     <string name="elem_Register_pin_D">Input pin of the data word to be stored.</string>
     <string name="elem_Register_pin_C">Clock input. A rising edge stores the value at the D pin.</string>
     <string name="elem_Register_pin_en">Enable pin. Storing a value works only if this pin is set high.</string>
@@ -653,9 +659,10 @@
     <string name="elem_PowerSupply_pin_VDD">Must be connected to VDD!</string>
     <string name="elem_PowerSupply_pin_GND">Must be connected to GND!</string>
     <string name="elem_Reset">Reset</string>
-    <string name="elem_Reset_pin_Reset">Reset Output. Is zero until the circuit has stabilized after power up.</string>
-    <string name="elem_Reset_tt">The output of this component is held low during the initialisation of the circuit.
-        After the circuit has stabilized the output goes to high.</string>
+    <string name="elem_Reset_pin_Reset">Reset Output.</string>
+    <string name="elem_Reset_tt">The output of this component is held high during the initialisation of the circuit.
+        After the circuit has stabilized the output goes to low.
+        If the output is inverted it behaves the opposite way.</string>
     <string name="elem_Break">Break</string>
     <string name="elem_Break_pin_brk">Stops fast simulation if set to 1.</string>
     <string name="elem_Break_tt">If the input of this component becomes high, the fast forward clocking is stopped.
@@ -800,7 +807,9 @@ The names of the variables may not be unique.</string>
     <string name="err_tableHasToManyResultColumns">The table has too many columns!</string>
     <string name="err_errorExportingZip">Error writing the zip file.</string>
     <string name="err_moreThanOneFastClock">Only one clock component with high frequency is allowed.</string>
-    <string name="err_circuitHasCycles">The circuit contains cycles. It's not possible to analyze such a circuit.</string>
+    <string name="err_circuitHasCycles">The circuit contains cycles. It's not possible to analyze such a circuit.
+        Cycles arise if an output of a gate is fed back to one of the inputs of the same gate.
+        The use of switches, FETs or relays also causes cycles.</string>
 
     <string name="key_AddrBits">Address Bits</string><!-- ROM, RAMDualPort, RAMSinglePort, RAMSinglePortSel, EEPROM -->
     <string name="key_AddrBits_tt">Number of address bits used.</string>
@@ -906,7 +915,8 @@ The names of the variables may not be unique.</string>
     <string name="key_termWidth">Characters per line</string><!-- Terminal -->
     <string name="key_termWidth_tt">The number of characters shown in a single line.</string>
     <string name="key_valueIsProbe">Use as measurement value</string><!-- RS_FF, JK_FF, D_FF, T_FF, JK_FF_AS, D_FF_AS, Register -->
-    <string name="key_valueIsProbe_tt">Is set the value is a measurement value and appears in the graph and data table.</string>
+    <string name="key_valueIsProbe_tt">Is set the value is a measurement value and appears in the graph and data table.
+        In addition, a label must be specified that can serve as identification of the value.</string>
     <string name="key_Testdata">Test data</string><!-- Testcase -->
     <string name="key_Testdata_tt">The description of the test case.
         Details of the syntax can be found in the help dialog of the test data editor.</string>
@@ -984,6 +994,11 @@ The names of the variables may not be unique.</string>
     <string name="key_outputBits_tt">The number of output bits must be greater than the number of input bits.</string>
     <string name="key_textFontSize">Font Size</string>
     <string name="key_textFontSize_tt">Sets the font size to use for this text.</string>
+    <string name="key_delayTime">Duration</string>
+    <string name="key_delayTime_tt">Delay time in units of the common gate propagation delay.</string>
+    <string name="key_invertOutput">inverted output</string>
+    <string name="key_invertOutput_tt">If selected the output is inverted.</string>
+
 
     <string name="mod_insertWire">Inserted wire.</string>
     <string name="mod_insertCopied">Insert from clipboard.</string>
@@ -1187,7 +1202,10 @@ The names of the variables may not be unique.</string>
     <string name="menu_showDataTable">Show measurement value table</string>
     <string name="menu_showDataTable_tt">Show table with the measured values in a separate window.</string>
     <string name="menu_exportZIP">Export tos ZIP file</string>
-    <string name="menu_exportZIP_tt">Exports the complete circuit as a ZIP file.</string>
+    <string name="menu_exportZIP_tt">Exports the circuit as a ZIP file.
+        The ZIP file thus contains all the files that are necessary for the operation of the circuit.</string>
+    <string name="menu_labelPins">Label Inputs and Outputs</string>
+    <string name="menu_labelPins_tt">Set a label to all inputs and outputs without a label.</string>
 
 
     <string name="message">&lt;h1&gt;Digital&lt;/h1&gt;A simple simulator for digital circuits.

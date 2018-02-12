@@ -6,6 +6,7 @@ import de.neemann.digital.core.Observer;
 import de.neemann.digital.core.element.*;
 import de.neemann.digital.core.io.In;
 import de.neemann.digital.core.io.InValue;
+import de.neemann.digital.core.io.Out;
 import de.neemann.digital.draw.elements.*;
 import de.neemann.digital.draw.graphics.Vector;
 import de.neemann.digital.draw.shapes.InputShape;
@@ -965,6 +966,18 @@ public class CircuitComponent extends JComponent implements Circuit.ChangedListe
         repaintNeeded();
     }
 
+    /**
+     * Translates the circuit.
+     *
+     * @param dx x movement
+     * @param dy y movement
+     */
+    public void translateCircuit(int dx, int dy) {
+        transform.translate(dx, dy);
+        isManualScale = true;
+        repaintNeeded();
+    }
+
     private void editAttributes(VisualElement element, MouseEvent e) {
         String name = element.getElementName();
         try {
@@ -1077,6 +1090,24 @@ public class CircuitComponent extends JComponent implements Circuit.ChangedListe
                 if (ve.getElementAttributes().get(Keys.BLOWN))
                     builder.add(new ModifyAttribute<>(ve, Keys.BLOWN, false));
             }
+        modify(builder.build());
+    }
+
+    /**
+     * Label all inputs and outputs
+     */
+    public void labelPins() {
+        LabelGenerator inGenerator = new LabelGenerator('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H');
+        LabelGenerator outGenerator = new LabelGenerator('Y', 'X', 'Z', 'U', 'V');
+
+        Modifications.Builder builder = new Modifications.Builder(Lang.get("menu_labelPins"));
+        for (VisualElement ve : circuit.getElements()) {
+            if (ve.equalsDescription(In.DESCRIPTION) && ve.getElementAttributes().getLabel().length() == 0) {
+                builder.add(new ModifyAttribute<>(ve, Keys.LABEL, inGenerator.createLabel()));
+            } else if (ve.equalsDescription(Out.DESCRIPTION) && ve.getElementAttributes().getLabel().length() == 0) {
+                builder.add(new ModifyAttribute<>(ve, Keys.LABEL, outGenerator.createLabel()));
+            }
+        }
         modify(builder.build());
     }
 

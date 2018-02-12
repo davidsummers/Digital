@@ -7,6 +7,7 @@ import de.neemann.digital.core.element.ElementTypeDescription;
 import de.neemann.digital.core.element.Keys;
 import de.neemann.digital.core.io.In;
 import de.neemann.digital.core.io.Out;
+import de.neemann.digital.core.memory.ROM;
 import de.neemann.digital.core.wiring.Driver;
 import de.neemann.digital.draw.elements.Circuit;
 import de.neemann.digital.draw.elements.VisualElement;
@@ -17,15 +18,19 @@ import de.neemann.digital.draw.graphics.Vector;
 import de.neemann.digital.draw.library.ElementLibrary;
 import de.neemann.digital.gui.Main;
 import de.neemann.digital.gui.NumberingWizard;
+import de.neemann.digital.gui.components.AttributeDialog;
 import de.neemann.digital.gui.components.CircuitComponent;
+import de.neemann.digital.gui.components.DataEditor;
 import de.neemann.digital.gui.components.ProbeDialog;
 import de.neemann.digital.gui.components.data.GraphDialog;
+import de.neemann.digital.gui.components.karnaugh.KarnaughMapComponent;
 import de.neemann.digital.gui.components.karnaugh.KarnaughMapDialog;
 import de.neemann.digital.gui.components.table.AllSolutionsDialog;
 import de.neemann.digital.gui.components.table.ExpressionListenerStore;
 import de.neemann.digital.gui.components.table.TableDialog;
 import de.neemann.digital.gui.components.testing.ValueTableDialog;
 import de.neemann.digital.lang.Lang;
+import de.neemann.digital.testing.TestCaseElement;
 import de.neemann.gui.ErrorMessage;
 import junit.framework.TestCase;
 
@@ -196,15 +201,15 @@ public class TestInGUI extends TestCase {
                 .use(createNew4VarTruthTable)
                 .add(new EnterTruthTable(0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1))
                 .press("F1")
-                .add(new GuiTester.ColorPicker(145, 135, new Color(208, 161, 161)))
-                .add(new GuiTester.ColorPicker(267, 132, new Color(191, 191, 223)))
-                .add(new GuiTester.ColorPicker(136, 194, new Color(255, 127, 127)))
-                .add(new GuiTester.ColorPicker(205, 194, new Color(127, 255, 127)))
-                .add(new GuiTester.ColorPicker(197, 257, new Color(127, 127, 255)))
-                .add(new GuiTester.ColorPicker(267, 256, new Color(255, 175, 255)))
-                .add(new GuiTester.ColorPicker(83, 315, new Color(228, 228, 127)))
-                .add(new GuiTester.ColorPicker(205, 317, new Color(127, 255, 255)))
-//                .add(new GuiTester.ColorPickerCreator())
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 144, 109, new Color(191, 127, 127)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 266, 110, new Color(127, 127, 191)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 82, 168, new Color(255, 127, 127)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 205, 170, new Color(127, 255, 127)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 143, 232, new Color(127, 127, 255)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 265, 230, new Color(255, 127, 255)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 83, 292, new Color(227, 227, 127)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 204, 291, new Color(127, 255, 255)))
+//                .add(new GuiTester.ColorPickerCreator(KarnaughMapComponent.class))
 //                .ask("Shows the k-map a checkerboard pattern?")
                 .add(new GuiTester.CloseTopMost())
                 .execute();
@@ -215,10 +220,10 @@ public class TestInGUI extends TestCase {
                 .use(createNew4VarTruthTable)
                 .add(new EnterTruthTable(0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1))
                 .press("F1")
-                .add(new GuiTester.ColorPicker(136, 110, new Color(255, 127, 127)))
-                .add(new GuiTester.ColorPicker(266, 109, new Color(255, 127, 127)))
-                .add(new GuiTester.ColorPicker(266, 329, new Color(255, 127, 127)))
-                .add(new GuiTester.ColorPicker(136, 337, new Color(255, 127, 127)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 136, 100, new Color(255, 127, 127)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 266, 100, new Color(255, 127, 127)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 266, 305, new Color(255, 127, 127)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 136, 305, new Color(255, 127, 127)))
 //                .add(new GuiTester.ColorPickerCreator())
 //                .ask("Are the edges covered in the k-map?")
                 .add(new GuiTester.CloseTopMost())
@@ -236,10 +241,10 @@ public class TestInGUI extends TestCase {
                 .press("RIGHT", 3)
                 .add(new EnterTruthTable(0, 0, 0, 1, 0, 1, 1, 1))
                 .press("F1")
-                .add(new GuiTester.ColorPicker(136, 255, new Color(255, 127, 127)))
-                .add(new GuiTester.ColorPicker(209, 254, new Color(127, 255, 127)))
-                .add(new GuiTester.ColorPicker(311, 210, new Color(191, 127, 127)))
-                .add(new GuiTester.ColorPicker(266, 256, new Color(255, 127, 127)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 136, 230, new Color(255, 127, 127)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 209, 230, new Color(127, 255, 127)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 311, 184, new Color(191, 127, 127)))
+                .add(new GuiTester.ColorPicker(KarnaughMapComponent.class, 266, 231, new Color(255, 127, 127)))
 //                .add(new GuiTester.ColorPickerCreator())
 //                .ask("Shows the k-map a 'two out of three' pattern?")
                 .add(new GuiTester.CloseTopMost())
@@ -322,7 +327,7 @@ public class TestInGUI extends TestCase {
                 .press("control typed c")
                 .press("F10")
                 .press("RIGHT", 2)
-                .press("DOWN", 9)
+                .press("DOWN", 10)
                 .press("ENTER")
                 .delay(500)
                 .press("F8")
@@ -345,8 +350,12 @@ public class TestInGUI extends TestCase {
     }
 
     public void testHardware() {
-        new GuiTester("dig/manualError/10_hardware.dig")
+        new GuiTester("dig/manualError/16_hardware.dig")
                 .press("F9")
+                .delay(500)
+                .add(new GuiTester.WindowCheck<>(Window.class, (gt, w) -> {
+                    if (w instanceof AllSolutionsDialog) w.getParent().requestFocus();
+                }))
                 .delay(500)
                 .press("F10")
                 .press("RIGHT", 4)
@@ -371,7 +380,7 @@ public class TestInGUI extends TestCase {
     public void testTestEditor() {
         new GuiTester("dig/manualError/11_editTest.dig")
                 .delay(300)
-                .mouseMove(200, 200)
+                .add(new SetMouseToElement((v) -> v.equalsDescription(TestCaseElement.TESTCASEDESCRIPTION)))
                 .mouseClick(InputEvent.BUTTON3_MASK)
                 .delay(300)
                 .type("testIdentzz")
@@ -497,7 +506,7 @@ public class TestInGUI extends TestCase {
 
 
     public void test74xxFunctions() {
-        new GuiTester("dig/manualError/10_hardware.dig")
+        new GuiTester("dig/manualError/10_74xx.dig")
                 .press("F10")
                 .press("RIGHT", 2)
                 .press("DOWN", 4)
@@ -662,6 +671,63 @@ public class TestInGUI extends TestCase {
                 .execute();
     }
 
+    public void testInputInvertEdit() {
+        new GuiTester("dig/manualError/14_inputInvert.dig")
+                .add(new SetMouseToElement((v) -> v.equalsDescription(And.DESCRIPTION)))
+                .mouseClick(InputEvent.BUTTON3_MASK)
+                .delay(500)
+                .press("TAB", 3)
+                .press("SPACE")
+                .delay(200)
+                .press("TAB", "SPACE", "TAB", "SPACE")
+                .delay(200)
+                .press("TAB", "TAB", "TAB", "SPACE")
+                .delay(200)
+                .press("F8")
+                .delay(200)
+                .add(new GuiTester.CheckTextInWindow<>(ValueTableDialog.class, Lang.get("msg_test_N_Passed", "")))
+                .add(new GuiTester.CheckTableRows<>(ValueTableDialog.class, 4))
+                .add(new GuiTester.CloseTopMost())
+                .execute();
+    }
+
+    public void testDataEditor() {
+        new GuiTester("dig/manualError/15_romDataEditor.dig")
+                .add(new SetMouseToElement((v) -> v.equalsDescription(ROM.DESCRIPTION)))
+                .mouseClick(InputEvent.BUTTON3_MASK)
+                .delay(500)
+                .press("TAB", "SPACE")
+                .delay(500)
+                .press("TAB", "TAB")
+                .type("7")
+                .press("TAB", "TAB")
+                .type("6")
+                .press("TAB", "TAB")
+                .type("5")
+                .press("TAB", "TAB")
+                .type("4")
+                .press("TAB", "TAB")
+                .type("3")
+                .press("TAB", "TAB")
+                .type("2")
+                .press("TAB", "TAB")
+                .type("1")
+                .press("TAB")
+                .add(new GuiTester.SetFocusTo<>(DataEditor.class,
+                        (c) -> c instanceof JButton && ((JButton) c).getText().equals(Lang.get("ok"))))
+                .press("SPACE")
+                .delay(500)
+                .add(new GuiTester.SetFocusTo<>(AttributeDialog.class,
+                        (c) -> c instanceof JButton && ((JButton) c).getText().equals(Lang.get("ok"))))
+                .press("SPACE")
+                .delay(500)
+                .press("F8")
+                .add(new GuiTester.CheckTextInWindow<>(ValueTableDialog.class, Lang.get("msg_test_N_Passed", "")))
+                .add(new GuiTester.CheckTableRows<>(ValueTableDialog.class, 8))
+                .add(new GuiTester.CloseTopMost())
+                .execute();
+    }
+
 
     public static class CheckErrorDialog extends GuiTester.WindowCheck<ErrorMessage.ErrorDialog> {
         private final String[] expected;
@@ -787,9 +853,9 @@ public class TestInGUI extends TestCase {
         private final ElementTypeDescription description;
         private final int dx;
         private final int dy;
-        private final GuiTester.ColorPickerInterface cpi;
+        private final GuiTester.ColorCheckInterface cpi;
 
-        public CheckColorInCircuit(ElementTypeDescription description, int dx, int dy, GuiTester.ColorPickerInterface cpi) {
+        public CheckColorInCircuit(ElementTypeDescription description, int dx, int dy, GuiTester.ColorCheckInterface cpi) {
             super(Main.class);
             this.description = description;
             this.dx = dx;
@@ -800,18 +866,14 @@ public class TestInGUI extends TestCase {
         @Override
         public void checkWindow(GuiTester guiTester, Main main) throws Exception {
             Thread.sleep(200);
-            Circuit c = main.getCircuitComponent().getCircuit();
-            VisualElement found = null;
-            int foundCounter = 0;
-            for (VisualElement v : c.getElements())
-                if (v.equalsDescription(description)) {
-                    found = v;
-                    foundCounter++;
-                }
+            List<VisualElement> el = main
+                    .getCircuitComponent()
+                    .getCircuit()
+                    .findElements(v -> v.equalsDescription(description));
 
-            assertEquals("not exact one " + description.getName() + " found in circuit", 1, foundCounter);
+            assertEquals("not exact one " + description.getName() + " found in circuit", 1, el.size());
 
-            final Vector posInCirc = found.getPos().add(dx, dy);
+            final Vector posInCirc = el.get(0).getPos().add(dx, dy);
             Point p = main.getCircuitComponent().transform(posInCirc);
             SwingUtilities.convertPointToScreen(p, main.getCircuitComponent());
 
@@ -821,7 +883,36 @@ public class TestInGUI extends TestCase {
         }
     }
 
-    private class ClickInputsAndOutputs extends GuiTester.WindowCheck<NumberingWizard> {
+    public static class SetMouseToElement extends GuiTester.WindowCheck<Main> {
+        private final Circuit.ElementFilter filter;
+
+        public SetMouseToElement(Circuit.ElementFilter filter) {
+            super(Main.class);
+            this.filter = filter;
+        }
+
+        @Override
+        public void checkWindow(GuiTester guiTester, Main main) throws Exception {
+            Thread.sleep(200);
+
+            List<VisualElement> el = main
+                    .getCircuitComponent()
+                    .getCircuit()
+                    .findElements(filter);
+
+            assertEquals("not exact one element found in circuit", 1, el.size());
+
+            final VisualElement ve = el.get(0);
+            GraphicMinMax mm = ve.getMinMax(false);
+            Vector pos = mm.getMin().add(mm.getMax()).div(2);
+            Point p = main.getCircuitComponent().transform(pos);
+            SwingUtilities.convertPointToScreen(p, main.getCircuitComponent());
+
+            guiTester.getRobot().mouseMove(p.x, p.y);
+        }
+    }
+
+    private static class ClickInputsAndOutputs extends GuiTester.WindowCheck<NumberingWizard> {
         public ClickInputsAndOutputs() {
             super(NumberingWizard.class);
         }
@@ -846,7 +937,7 @@ public class TestInGUI extends TestCase {
         }
     }
 
-    private class PinNameChecker extends GuiTester.WindowCheck<Main> {
+    private static class PinNameChecker extends GuiTester.WindowCheck<Main> {
         private final String prefix;
 
         public PinNameChecker(String prefix) {
@@ -864,7 +955,7 @@ public class TestInGUI extends TestCase {
         }
     }
 
-    private class CheckOutputValue extends GuiTester.WindowCheck<Main> {
+    private static class CheckOutputValue extends GuiTester.WindowCheck<Main> {
         private final int val;
 
         public CheckOutputValue(int val) {

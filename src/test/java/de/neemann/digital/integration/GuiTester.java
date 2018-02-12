@@ -16,6 +16,7 @@ import java.util.ArrayList;
 
 import static java.awt.event.InputEvent.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class GuiTester {
@@ -23,14 +24,20 @@ public class GuiTester {
     private final ArrayList<Runnable> runnableList;
     private Main main;
     private String filename;
+    private final String displayName;
     private Robot robot;
 
     public GuiTester() {
-        this(null);
+        this(null, null);
     }
 
     public GuiTester(String filename) {
+        this(filename, null);
+    }
+
+    public GuiTester(String filename, String displayName) {
         this.filename = filename;
+        this.displayName = displayName;
         runnableList = new ArrayList<>();
     }
 
@@ -82,22 +89,31 @@ public class GuiTester {
         } catch (IOException e) {
             fail(e.getMessage());
         }
-        return type(f.getPath());
+        return type(f.getPath().replace('\\', '/'));
     }
 
     public GuiTester type(String s) {
         add(((gt) -> {
             for (int i = 0; i < s.length(); i++) {
                 final char ch = s.charAt(i);
-                int code = KeyEvent.getExtendedKeyCodeForChar(ch);
-                if (ch == '/' || Character.isUpperCase(ch)) {
-                    gt.keyPress(KeyEvent.VK_SHIFT);
-                    gt.keyPress(code);
-                    gt.keyRelease(code);
-                    gt.keyRelease(KeyEvent.VK_SHIFT);
-                } else {
-                    gt.keyPress(code);
-                    gt.keyRelease(code);
+                switch (ch) {
+                    case ':':
+                        gt.keyType(KeyEvent.VK_SHIFT, KeyEvent.VK_PERIOD);
+                        break;
+                    case '/':
+                        gt.keyType(KeyEvent.VK_SHIFT, KeyEvent.VK_7);
+                        break;
+                    case '!':
+                        gt.keyType(KeyEvent.VK_SHIFT, KeyEvent.VK_1);
+                        break;
+                    case '~':
+                        gt.keyType(KeyEvent.VK_CONTROL, KeyEvent.VK_ALT, KeyEvent.VK_PLUS);
+                        break;
+                    default:
+                        if (Character.isUpperCase(ch))
+                            gt.keyType(KeyEvent.VK_SHIFT, KeyEvent.getExtendedKeyCodeForChar(Character.toLowerCase(ch)));
+                        else
+                            gt.keyType(KeyEvent.getExtendedKeyCodeForChar(ch));
                 }
             }
         }));
@@ -152,6 +168,8 @@ public class GuiTester {
                     if (filename != null) {
                         File file = new File(Resources.getRoot(), filename);
                         main = new Main.MainBuilder().setFileToOpen(file).build();
+                        if (displayName != null)
+                            SwingUtilities.invokeLater(() -> main.setTitle(displayName + " - Digital"));
                     } else
                         main = new Main.MainBuilder().setCircuit(new Circuit()).build();
                     main.setVisible(true);
@@ -206,13 +224,15 @@ public class GuiTester {
         if ((mod & SHIFT_DOWN_MASK) != 0) keyPress(KeyEvent.VK_SHIFT);
         if ((mod & CTRL_DOWN_MASK) != 0) keyPress(KeyEvent.VK_CONTROL);
         if ((mod & ALT_DOWN_MASK) != 0) keyPress(KeyEvent.VK_ALT);
-        int keyCode = stroke.getKeyCode();
-        if (keyCode == 0) keyCode = KeyEvent.getExtendedKeyCodeForChar(stroke.getKeyChar());
-        keyPress(keyCode);
-        keyRelease(keyCode);
-        if ((mod & SHIFT_DOWN_MASK) != 0) keyRelease(KeyEvent.VK_SHIFT);
-        if ((mod & CTRL_DOWN_MASK) != 0) keyRelease(KeyEvent.VK_CONTROL);
-        if ((mod & ALT_DOWN_MASK) != 0) keyRelease(KeyEvent.VK_ALT);
+        try {
+            int keyCode = stroke.getKeyCode();
+            if (keyCode == 0) keyCode = KeyEvent.getExtendedKeyCodeForChar(stroke.getKeyChar());
+            keyType(keyCode);
+        } finally {
+            if ((mod & SHIFT_DOWN_MASK) != 0) keyRelease(KeyEvent.VK_SHIFT);
+            if ((mod & CTRL_DOWN_MASK) != 0) keyRelease(KeyEvent.VK_CONTROL);
+            if ((mod & ALT_DOWN_MASK) != 0) keyRelease(KeyEvent.VK_ALT);
+        }
     }
 
     public void mouseClickNow(int x, int y, int buttons) throws InterruptedException {
@@ -260,6 +280,31 @@ public class GuiTester {
         else if (baseContainer instanceof JFrame)
             baseContainer = ((JFrame) baseContainer).getContentPane();
         return baseContainer;
+    }
+
+
+    private void keyType(int code1, int code2) {
+        robot.keyPress(code1);
+        try {
+            robot.keyPress(code2);
+            robot.keyRelease(code2);
+        } finally {
+            robot.keyRelease(code1);
+        }
+    }
+
+    private void keyType(int code1, int code2, int code3) {
+        robot.keyPress(code1);
+        try {
+            keyType(code2, code3);
+        } finally {
+            robot.keyRelease(code1);
+        }
+    }
+
+    private void keyType(int keyCode) {
+        robot.keyPress(keyCode);
+        robot.keyRelease(keyCode);
     }
 
     private void keyPress(int keyCode) {
@@ -381,6 +426,35 @@ public class GuiTester {
         public abstract void visit(Component component);
     }
 
+    public static class SetFocusTo<W extends Window> extends ComponentTraverse<W> {
+
+        private final ComponentFilter filter;
+
+        /**
+         * creates a new instance
+         *
+         * @param expected the expected window
+         * @param filter   filter
+         */
+        public SetFocusTo(Class<W> expected, ComponentFilter filter) {
+            super(expected);
+            this.filter = filter;
+        }
+
+        @Override
+        public void visit(Component component) {
+            if (filter.accept(component))
+                component.requestFocus();
+        }
+    }
+
+    /**
+     * filters a certain component
+     */
+    public interface ComponentFilter {
+        boolean accept(Component component);
+    }
+
 
     /**
      * Checks if the topmost dialog contains the given strings.
@@ -464,9 +538,10 @@ public class GuiTester {
      * Checks a color in a window
      */
     public static class ColorPicker implements Runnable {
+        private final Class<? extends Component> target;
         private final int x;
         private final int y;
-        private final ColorPickerInterface cpi;
+        private final ColorCheckInterface cpi;
 
 
         /**
@@ -476,8 +551,13 @@ public class GuiTester {
          * @param y             y coordinate.
          * @param expectedColor the expected color
          */
-        public ColorPicker(int x, int y, Color expectedColor) {
-            this(x, y, (c) -> assertEquals(expectedColor, c));
+        public ColorPicker(Class<? extends Component> target, int x, int y, Color expectedColor) {
+            this(target, x, y, (c) -> {
+                boolean ok = (Math.abs (expectedColor.getRed() - c.getRed()) < 5)
+                        && (Math.abs(expectedColor.getGreen() - c.getGreen()) < 5)
+                        && (Math.abs(expectedColor.getBlue() - c.getBlue()) < 5);
+                assertTrue("expected:<" + expectedColor + "> but was:<" + c + ">", ok);
+            });
         }
 
         /**
@@ -487,7 +567,8 @@ public class GuiTester {
          * @param y   y coordinate.
          * @param cpi the color test
          */
-        public ColorPicker(int x, int y, ColorPickerInterface cpi) {
+        public ColorPicker(Class<? extends Component> target, int x, int y, ColorCheckInterface cpi) {
+            this.target = target;
             this.x = x;
             this.y = y;
             this.cpi = cpi;
@@ -496,14 +577,34 @@ public class GuiTester {
         @Override
         public void run(GuiTester guiTester) throws Exception {
             Point p = new Point(x, y);
-            SwingUtilities.convertPointToScreen(p, getBaseContainer());
+
+            Component t = searchComponent(FocusManager.getCurrentManager().getActiveWindow(), target);
+            if (t == null)
+                throw new RuntimeException("Component " + target.getSimpleName() + " not found!");
+
+            SwingUtilities.convertPointToScreen(p, t);
             Thread.sleep(500);
             guiTester.getRobot().mouseMove(p.x, p.y);
+            Thread.sleep(1000);
             cpi.checkColor(guiTester.getRobot().getPixelColor(p.x, p.y));
         }
     }
 
-    public interface ColorPickerInterface {
+    private static Component searchComponent(Component c, Class<? extends Component> target) {
+        if (c.getClass() == target)
+            return c;
+        if (c instanceof Container) {
+            Container con = (Container) c;
+            for (int i = 0; i < con.getComponentCount(); i++) {
+                Component s = searchComponent(con.getComponent(i), target);
+                if (s != null)
+                    return s;
+            }
+        }
+        return null;
+    }
+
+    public interface ColorCheckInterface {
         void checkColor(Color pixelColor);
     }
 
@@ -512,12 +613,14 @@ public class GuiTester {
      */
     public static class ColorPickerCreator extends JDialog implements Runnable {
         private final JLabel label;
+        private final Class<? extends Component> target;
 
         /**
          * Creates a new instance
          */
-        public ColorPickerCreator() {
+        public ColorPickerCreator(Class<? extends Component> target) {
             super(null, "Position picker", ModalityType.APPLICATION_MODAL);
+            this.target = target;
             setDefaultCloseOperation(DISPOSE_ON_CLOSE);
             label = new JLabel("<html>Move mouse to pos<br>and press ENTER</html>");
             label.setFocusable(true);
@@ -528,7 +631,10 @@ public class GuiTester {
 
         @Override
         public void run(GuiTester gt) throws Exception {
-            Container baseContainer = getBaseContainer();
+            Component baseContainer = searchComponent(FocusManager.getCurrentManager().getActiveWindow(), target);
+            if (baseContainer == null)
+                throw new RuntimeException("Component " + target.getSimpleName() + " not found!");
+
             label.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent keyEvent) {
@@ -538,6 +644,8 @@ public class GuiTester {
                         Color col = gt.getRobot().getPixelColor(p.x, p.y);
                         SwingUtilities.convertPointFromScreen(p, baseContainer);
                         System.out.print(".add(new GuiTester.ColorPicker(");
+                        System.out.print(target.getSimpleName());
+                        System.out.print(".class, ");
                         System.out.print(p.x + ", " + p.y);
                         System.out.print(", new Color(");
                         System.out.print(col.getRed() + "," + col.getGreen() + "," + col.getBlue());
